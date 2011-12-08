@@ -14,20 +14,18 @@ using Bot.Processors;
 
 namespace Bot
 {
-    delegate void Command(IrcEventArgs e);
-
     class Bot
     {
         #region Members
 
         protected static bool quit = false;
 
-        protected Dictionary<string, AsyncCommand> asyncCommands = new Dictionary<string,AsyncCommand>();
-        protected Dictionary<string, Command> commands = new Dictionary<string,Command>();
+        protected Dictionary<string, Command> commands = new Dictionary<string, Command>();
         protected IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
         protected ServerDescriptor server = null;
         protected IrcClient irc = null;
         protected bool silent = false;
+        protected string commandIdentifier = "!";
 
         #endregion
 
@@ -35,33 +33,25 @@ namespace Bot
 
         public Bot()
         {
-            
+            RegisterCommands();
         }
 
         public Bot(ServerDescriptor server)
         {
-            this.server = server; 
+            this.server = server;
+            RegisterCommands();
         }
 
         public Bot(ServerDescriptor server, IConfig globalSettings)
         {
             this.server = server;
-
-            AsyncCommand nowPlaying = new NowPlaying();
-            nowPlaying.CommandCompleted += OnAsyncCommandComplete;
-            asyncCommands.Add(nowPlaying.Name(), nowPlaying);
-
-            AsyncCommand wikipedia = new Wikipedia();
-            wikipedia.CommandCompleted += OnAsyncCommandComplete;
-            asyncCommands.Add(wikipedia.Name(), wikipedia);
-
-            AsyncProcessor urlTitles = new UrlTitles(globalSettings);
-            asyncProcessors.Add(urlTitles);
+            RegisterCommands(globalSettings);
         }
 
         public Bot(string host, int port, bool useSsl, string[] channels)
         {
             server = new ServerDescriptor(host, port, useSsl, channels);
+            RegisterCommands();
         }
 
         #endregion
@@ -90,9 +80,6 @@ namespace Bot
             irc.OnChannelMessage += new IrcEventHandler(OnChannelMessage);
             irc.OnError += new ErrorEventHandler(OnError);
             irc.OnRawMessage += new IrcEventHandler(OnRawMessage);
-
-            RegisterCommands();
-            RegisterProcessors();
 
             try
             {
@@ -196,17 +183,34 @@ namespace Bot
         /// </summary>
         private void RegisterCommands()
         {
-            // TODO: Make this process automatic
-            Command silent = Silent;
-            commands.Add("!silent", silent);
+            
         }
 
         /// <summary>
-        /// Register message processing functions
+        /// Register user invocable commands
         /// </summary>
-        private void RegisterProcessors()
+        private void RegisterCommands(IConfig globalSettings)
         {
+            // TODO: Make this process automatic
+            AsyncCommand nowPlaying = new NowPlaying();
+            nowPlaying.CommandCompleted += OnAsyncCommandComplete;
+            commands.Add(commandIdentifier + nowPlaying.Name(), nowPlaying);
 
+            AsyncCommand wikipedia = new Wikipedia();
+            wikipedia.CommandCompleted += OnAsyncCommandComplete;
+            commands.Add(commandIdentifier + wikipedia.Name(), wikipedia);
+
+            AsyncCommand tyda = new Tyda();
+            tyda.CommandCompleted += OnAsyncCommandComplete;
+            commands.Add(commandIdentifier + tyda.Name(), tyda);
+
+            commands.Add(commandIdentifier + "say", new Say());
+            commands.Add(commandIdentifier + "join", new Join());
+            commands.Add(commandIdentifier + "part", new Part());
+
+            // Register processors
+            AsyncProcessor urlTitles = new UrlTitles(globalSettings);
+            asyncProcessors.Add(urlTitles);
         }
 
         #endregion
@@ -223,24 +227,12 @@ namespace Bot
 
         #endregion
 
-        #region Commands/processors
-
-        private void Silent(IrcEventArgs e)
-        {
-            if (e.Data.MessageArray.Count() > 1 && e.Data.MessageArray[1] == "false")
-                silent = false;
-            else
-                silent = true;
-        }
-
-        #endregion
-
         #region Event handlers
 
         public void OnAsyncCommandComplete(object sender, AsyncCommandCompletedEventArgs e)
         {
             if (e != null && !string.IsNullOrWhiteSpace(e.Destination) && !string.IsNullOrWhiteSpace(e.Message))
-                irc.SendMessage(SendType.Message, e.Destination, e.Message);
+                irc.SendMessage(e.SendType, e.Destination, e.Message);
         }
 
         public void OnQueryMessage(object sender, IrcEventArgs e)
@@ -250,28 +242,21 @@ namespace Bot
 
         public void OnChannelMessage(object sender, IrcEventArgs e)
         {
-            if (commands.ContainsKey(e.Data.MessageArray[0]))
+            if (e.Data.Message.StartsWith(commandIdentifier) && commands.ContainsKey(e.Data.MessageArray[0]))
             {
-                commands[e.Data.MessageArray[0]].DynamicInvoke(e);
+                commands[e.Data.MessageArray[0]].Execute(e);
             }
 
-            if (asyncCommands.ContainsKey(e.Data.MessageArray[0]))
+            // TODO: Real authentication
+            if (e.Data.Nick == "wqz" && e.Data.MessageArray[0] == "!quit" || e.Data.MessageArray[0] == "!die")
             {
-                asyncCommands[e.Data.MessageArray[0]].Execute(e);
+                irc.Disconnect();
+                quit = true;
             }
 
             foreach (AsyncProcessor processor in asyncProcessors)
             {
                 processor.Execute(e);
-            }
-
-            if (e.Data.Message.StartsWith("!") && e.Data.Nick == "wqz")
-            {
-                if (e.Data.MessageArray[0] == "!quit" || e.Data.MessageArray[0] == "!die")
-                {
-                    irc.Disconnect();
-                    quit = true;
-                }
             }
         }
 

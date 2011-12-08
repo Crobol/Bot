@@ -76,6 +76,9 @@
     <Compile Include="Bot.cs" />
     <Compile Include="Commands\AsyncCommand.cs" />
     <Compile Include="Commands\AsyncCommandCompletedEventArgs.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\IRC.cs" />
+    <Compile Include="Commands\Tyda.cs" />
     <Compile Include="Commands\Wikipedia.cs" />
     <Compile Include="Processors\AsyncProcessor.cs" />
     <Compile Include="Processors\UrlTitles.cs" />

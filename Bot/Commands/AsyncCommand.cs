@@ -9,16 +9,15 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
-    abstract class AsyncCommand : ICommand
+    abstract class AsyncCommand : Command
     {
         protected delegate AsyncCommandCompletedEventArgs WorkerDelegate(IrcEventArgs e);
         public delegate void AsyncCommandCompletedEventHandler(object sender, AsyncCommandCompletedEventArgs e);
         public event AsyncCommandCompletedEventHandler CommandCompleted;
 
         protected abstract AsyncCommandCompletedEventArgs Worker(IrcEventArgs e);
-        public abstract string Name();
 
-        public void Execute(IrcEventArgs e)
+        public override void Execute(IrcEventArgs e)
         {
             WorkerDelegate worker = new WorkerDelegate(Worker);
             AsyncCallback completedCallback = new AsyncCallback(CommandCompletedCallback);

@@ -13,14 +13,9 @@ namespace Bot.Commands
 {
     class Wikipedia : AsyncCommand
     {
-        public Wikipedia()
-        {
-
-        }
-
         public override string Name()
         {
-            return "!w";
+            return "w";
         }
 
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)

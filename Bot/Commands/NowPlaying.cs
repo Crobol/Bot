@@ -13,14 +13,9 @@ namespace Bot.Commands
 {
     class NowPlaying : AsyncCommand
     {
-        public NowPlaying()
-        {
-
-        }
-
         public override string Name()
         {
-            return "!np";
+            return "np";
         }
 
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
