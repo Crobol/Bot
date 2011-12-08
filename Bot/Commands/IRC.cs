@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Bot.Core.Commands;
 using Meebey.SmartIrc4net;
 
 namespace Bot.Commands

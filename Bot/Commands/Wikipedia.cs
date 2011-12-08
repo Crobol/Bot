@@ -6,6 +6,8 @@ using System.Net;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
+using Bot.Core;
+using Bot.Core.Commands;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
 
@@ -22,7 +24,7 @@ namespace Bot.Commands
         {
             string subject = string.Join(" ", e.Data.MessageArray.Skip(1));
             subject = subject.Replace(" ", "_");
-            subject = StringHelper.UppercaseFirst(subject);
+            subject = subject.UppercaseFirst();
             if (!string.IsNullOrWhiteSpace(subject))
             {
                 string url = "https://en.wikipedia.org/wiki/" + subject;

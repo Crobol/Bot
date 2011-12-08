@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading;
 using Meebey.SmartIrc4net;
 
-namespace Bot.Processors
+namespace Bot.Core.Processors
 {
-    abstract class AsyncProcessor
+    public abstract class AsyncProcessor
     {
         protected abstract void Worker(IrcEventArgs e);
 

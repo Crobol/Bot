@@ -5,9 +5,9 @@ using System.Text;
 using System.Net;
 using System.IO;
 
-namespace Bot
+namespace Bot.Core
 {
-    class HtmlHelper
+    public class HtmlHelper
     {
         public static string GetFromUrl(string url)
         {

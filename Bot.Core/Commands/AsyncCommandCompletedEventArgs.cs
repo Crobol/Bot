@@ -5,9 +5,9 @@ using System.Text;
 using System.Collections.Specialized;
 using Meebey.SmartIrc4net;
 
-namespace Bot.Commands
+namespace Bot.Core.Commands
 {
-    class AsyncCommandCompletedEventArgs : EventArgs
+    public class AsyncCommandCompletedEventArgs : EventArgs
     {
         public string Message { get; set; }
         public string Destination { get; set; }

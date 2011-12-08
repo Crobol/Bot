@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Bot
+namespace Bot.Core
 {
-    class StringHelper
+    public static class StringExtensions
     {
-        public static string UppercaseFirst(string s)
+        public static string UppercaseFirst(this string s)
         {
             if (string.IsNullOrEmpty(s))
             {

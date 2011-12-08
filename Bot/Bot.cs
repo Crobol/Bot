@@ -2,15 +2,23 @@
 using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.Scripting.Hosting;
+using Bot.Core.Commands;
+using Bot.Core.Processors;
+using Bot.Commands;
+using Bot.Processors;
+using Bot.Core.Plugins;
+using IronPython.Hosting;
 using Meebey.SmartIrc4net;
 using HtmlAgilityPack;
 using Nini.Config;
-using Bot.Commands;
-using Bot.Processors;
 
 namespace Bot
 {
@@ -19,6 +27,11 @@ namespace Bot
         #region Members
 
         protected static bool quit = false;
+
+        [ImportMany(AllowRecomposition = true)]
+        public IEnumerable<IPlugin> Plugins { get; set; }
+
+        protected ScriptRuntime ipy = null;
 
         protected Dictionary<string, Command> commands = new Dictionary<string, Command>();
         protected IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
@@ -45,6 +58,10 @@ namespace Bot
         public Bot(ServerDescriptor server, IConfig globalSettings)
         {
             this.server = server;
+            Console.WriteLine("Loading plugins...");
+            Compose(globalSettings.GetString("plugin-folder", "Plugins"));
+            Console.WriteLine("Creating Python runtime...");
+            ipy = Python.CreateRuntime();
             RegisterCommands(globalSettings);
         }
 
@@ -57,6 +74,13 @@ namespace Bot
         #endregion
 
         #region Initialization
+
+        private void Compose(string pluginFolder = "Plugins")
+        {
+            var catalog = new DirectoryCatalog(pluginFolder);
+            var container = new CompositionContainer(catalog);
+            container.ComposeParts(this);
+        }
 
         /// <summary>
         /// Connects to server according to "server"
@@ -71,18 +95,28 @@ namespace Bot
 
             // Settings
             irc.Encoding = System.Text.Encoding.UTF8;
-            irc.SendDelay = 200;
+            irc.SendDelay = 0;
             irc.ActiveChannelSyncing = false;
             irc.UseSsl = server.UseSsl;
 
             // Bind event handlers
             irc.OnQueryMessage += new IrcEventHandler(OnQueryMessage);
             irc.OnChannelMessage += new IrcEventHandler(OnChannelMessage);
-            irc.OnError += new ErrorEventHandler(OnError);
+            irc.OnError += new Meebey.SmartIrc4net.ErrorEventHandler(OnError);
             irc.OnRawMessage += new IrcEventHandler(OnRawMessage);
+
+            
+            Console.WriteLine("Initializing plugins...");
+            foreach (var plugin in Plugins)
+            {
+                plugin.Initialize(null);
+                irc.OnChannelMessage += new IrcEventHandler(plugin.OnChannelMessage);
+                irc.OnRawMessage += new IrcEventHandler(plugin.OnRawMessage);
+            }
 
             try
             {
+                Console.WriteLine("Connecting to server...");
                 irc.Connect(server.Host, server.Port);
             }
             catch (ConnectionException e)
@@ -117,18 +151,19 @@ namespace Bot
         /// <summary>
         /// Connects to all servers according to ServerDescriptors in separate threads and suspends itself in a loop waiting for console input
         /// </summary>
-        public static void Start(ServerDescriptor[] servers, IConfig globalSettings)
+        public static void Run(ServerDescriptor[] servers, IConfig globalSettings)
         {
-            Bot.Start(servers.ToList(), globalSettings);
+            Bot.Run(servers.ToList(), globalSettings);
         }
 
         /// <summary>
         /// Connects to all servers according to ServerDescriptors in separate threads and suspends itself in a loop waiting for console input
         /// </summary>
-        public static void Start(List<ServerDescriptor> servers, IConfig globalSettings)
+        public static void Run(List<ServerDescriptor> servers, IConfig globalSettings)
         {
             Thread.CurrentThread.Name = "Main";
 
+            Console.WriteLine("Starting Bot...");
             foreach (ServerDescriptor server in servers)
             {
                 Bot instance = new Bot(server, globalSettings); // TODO: Save instances for disconnection
@@ -151,7 +186,7 @@ namespace Bot
         /// Connects to all servers specified in the config file located at "configFilePath"
         /// </summary>
         /// <param name="configFilePath"></param>
-        public static void Start(string configFilePath)
+        public static void Run(string configFilePath)
         {
             IConfigSource source = new IniConfigSource(configFilePath);
 
@@ -175,7 +210,7 @@ namespace Bot
                 }
             }
 
-            Bot.Start(servers, global);
+            Bot.Run(servers, global);
         }
 
         /// <summary>
@@ -191,6 +226,8 @@ namespace Bot
         /// </summary>
         private void RegisterCommands(IConfig globalSettings)
         {
+            Console.WriteLine("Registering Commands...");
+
             // TODO: Make this process automatic
             AsyncCommand nowPlaying = new NowPlaying();
             nowPlaying.CommandCompleted += OnAsyncCommandComplete;
@@ -207,6 +244,33 @@ namespace Bot
             commands.Add(commandIdentifier + "say", new Say());
             commands.Add(commandIdentifier + "join", new Join());
             commands.Add(commandIdentifier + "part", new Part());
+
+            // Loading Python scripts
+            Console.WriteLine("Loading Python scripts...");
+
+            string[] files = Directory.GetFiles(globalSettings.GetString("script-folder", "Scripts"));
+            foreach (string file in files)
+            {
+                var scope = ipy.ExecuteFile(file);
+                IEnumerable<string> variableNames = scope.GetVariableNames();
+                foreach (string variable in variableNames.Where(x => !x.StartsWith("_")))
+                {
+                    // TODO: Cleaner way to load classes that inherits "Command"?
+                    try
+                    {
+                        var pythonCommandType = scope.GetVariable(variable);
+                        if (IronPython.Runtime.Types.PythonType.Get__name__(pythonCommandType.__bases__[0]) == "Command")
+                        {
+                            var pythonCommand = ipy.Operations.CreateInstance(pythonCommandType);
+                            commands.Add(commandIdentifier + pythonCommand.Name(), pythonCommand);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                }
+            }
 
             // Register processors
             AsyncProcessor urlTitles = new UrlTitles(globalSettings);
@@ -260,7 +324,7 @@ namespace Bot
             }
         }
 
-        public void OnError(object sender, ErrorEventArgs e)
+        public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e)
         {
             System.Console.WriteLine("Error | Message: " + e.ErrorMessage);
             Exit();

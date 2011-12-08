@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Meebey.SmartIrc4net;
 
-namespace Bot.Commands
+namespace Bot.Core.Commands
 {
     interface ICommand
     {

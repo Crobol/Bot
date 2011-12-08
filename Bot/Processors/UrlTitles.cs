@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using Bot.Core.Processors;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
 using Nini.Config;

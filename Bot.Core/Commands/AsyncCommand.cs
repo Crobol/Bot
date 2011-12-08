@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using Meebey.SmartIrc4net;
 
-namespace Bot.Commands
+namespace Bot.Core.Commands
 {
-    abstract class AsyncCommand : Command
+    public abstract class AsyncCommand : Command
     {
         protected delegate AsyncCommandCompletedEventArgs WorkerDelegate(IrcEventArgs e);
         public delegate void AsyncCommandCompletedEventHandler(object sender, AsyncCommandCompletedEventArgs e);

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using Meebey.SmartIrc4net;
 
-namespace Bot.Commands
+namespace Bot.Core.Commands
 {
-    abstract class Command
+    public abstract class Command
     {
         public abstract string Name();
 

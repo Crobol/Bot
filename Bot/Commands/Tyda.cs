@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Bot.Core;
+using Bot.Core.Commands;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
 
