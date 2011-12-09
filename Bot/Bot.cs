@@ -9,13 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Text.RegularExpressions;
-using Microsoft.Scripting.Hosting;
 using Bot.Core.Commands;
 using Bot.Core.Processors;
 using Bot.Commands;
 using Bot.Processors;
 using Bot.Core.Plugins;
-using IronPython.Hosting;
 using Meebey.SmartIrc4net;
 using HtmlAgilityPack;
 using Nini.Config;
@@ -31,13 +29,12 @@ namespace Bot
         [ImportMany(AllowRecomposition = true)]
         public IEnumerable<IPlugin> Plugins { get; set; }
 
-        protected ScriptRuntime ipy = null;
-
         protected Dictionary<string, Command> commands = new Dictionary<string, Command>();
         protected IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
         protected ServerDescriptor server = null;
+        protected IConfig config = null;
         protected IrcClient irc = null;
-        protected bool silent = false;
+        protected bool silent = true;
         protected string commandIdentifier = "!";
 
         #endregion
@@ -55,14 +52,13 @@ namespace Bot
             RegisterCommands();
         }
 
-        public Bot(ServerDescriptor server, IConfig globalSettings)
+        public Bot(ServerDescriptor server, IConfig config)
         {
             this.server = server;
+            this.config = config;
             Console.WriteLine("Loading plugins...");
-            Compose(globalSettings.GetString("plugin-folder", "Plugins"));
-            Console.WriteLine("Creating Python runtime...");
-            ipy = Python.CreateRuntime();
-            RegisterCommands(globalSettings);
+            Compose(config.GetString("plugin-folder", "Plugins"));
+            RegisterCommands(config);
         }
 
         public Bot(string host, int port, bool useSsl, string[] channels)
@@ -105,11 +101,10 @@ namespace Bot
             irc.OnError += new Meebey.SmartIrc4net.ErrorEventHandler(OnError);
             irc.OnRawMessage += new IrcEventHandler(OnRawMessage);
 
-            
             Console.WriteLine("Initializing plugins...");
             foreach (var plugin in Plugins)
             {
-                plugin.Initialize(null);
+                plugin.Initialize(config);
                 irc.OnChannelMessage += new IrcEventHandler(plugin.OnChannelMessage);
                 irc.OnRawMessage += new IrcEventHandler(plugin.OnRawMessage);
             }
@@ -174,6 +169,7 @@ namespace Bot
 
             do
             {
+                
                 string input = Console.ReadLine();
                 if (input == "die")
                     quit = true;
@@ -224,12 +220,12 @@ namespace Bot
         /// <summary>
         /// Register user invocable commands
         /// </summary>
-        private void RegisterCommands(IConfig globalSettings)
+        private void RegisterCommands(IConfig config)
         {
             Console.WriteLine("Registering Commands...");
 
             // TODO: Make this process automatic
-            AsyncCommand nowPlaying = new NowPlaying();
+            AsyncCommand nowPlaying = new NowPlaying(config);
             nowPlaying.CommandCompleted += OnAsyncCommandComplete;
             commands.Add(commandIdentifier + nowPlaying.Name(), nowPlaying);
 
@@ -244,36 +240,10 @@ namespace Bot
             commands.Add(commandIdentifier + "say", new Say());
             commands.Add(commandIdentifier + "join", new Join());
             commands.Add(commandIdentifier + "part", new Part());
-
-            // Loading Python scripts
-            Console.WriteLine("Loading Python scripts...");
-
-            string[] files = Directory.GetFiles(globalSettings.GetString("script-folder", "Scripts"));
-            foreach (string file in files)
-            {
-                var scope = ipy.ExecuteFile(file);
-                IEnumerable<string> variableNames = scope.GetVariableNames();
-                foreach (string variable in variableNames.Where(x => !x.StartsWith("_")))
-                {
-                    // TODO: Cleaner way to load classes that inherits "Command"?
-                    try
-                    {
-                        var pythonCommandType = scope.GetVariable(variable);
-                        if (IronPython.Runtime.Types.PythonType.Get__name__(pythonCommandType.__bases__[0]) == "Command")
-                        {
-                            var pythonCommand = ipy.Operations.CreateInstance(pythonCommandType);
-                            commands.Add(commandIdentifier + pythonCommand.Name(), pythonCommand);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-
-                    }
-                }
-            }
+            commands.Add(commandIdentifier + "set", new Set(config));
 
             // Register processors
-            AsyncProcessor urlTitles = new UrlTitles(globalSettings);
+            AsyncProcessor urlTitles = new UrlTitles(config);
             asyncProcessors.Add(urlTitles);
         }
 
@@ -308,7 +278,14 @@ namespace Bot
         {
             if (e.Data.Message.StartsWith(commandIdentifier) && commands.ContainsKey(e.Data.MessageArray[0]))
             {
-                commands[e.Data.MessageArray[0]].Execute(e);
+                try
+                {
+                    commands[e.Data.MessageArray[0]].Execute(e);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error | Message: " + ex.Message);
+                }
             }
 
             // TODO: Real authentication
@@ -332,7 +309,8 @@ namespace Bot
 
         public void OnRawMessage(object sender, IrcEventArgs e)
         {
-            System.Console.WriteLine("Received | Message: " + e.Data.RawMessage);
+            if (!silent)
+                System.Console.WriteLine("Received | Message: " + e.Data.RawMessage);
         }
 
         #endregion

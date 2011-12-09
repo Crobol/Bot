@@ -10,11 +10,19 @@ using Bot.Core;
 using Bot.Core.Commands;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
+using Nini.Config;
 
 namespace Bot.Commands
 {
     class NowPlaying : AsyncCommand
     {
+        IConfig config = null;
+
+        public NowPlaying(IConfig config)
+        {
+            this.config = config;
+        }
+
         public override string Name()
         {
             return "np";
@@ -26,9 +34,13 @@ namespace Bot.Commands
             string message = "";
 
             if (e.Data.MessageArray.Count() > 1)
+            {
                 nick = e.Data.MessageArray[1];
+            }
             else
-                nick = e.Data.Nick;
+            {
+                nick = config.GetString(e.Data.Nick, e.Data.Nick);
+            }
 
             if (!string.IsNullOrWhiteSpace(nick))
                 message = FetchNowPlayingInfo(nick);
