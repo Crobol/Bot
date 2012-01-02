@@ -10,7 +10,6 @@ namespace Bot.Core.Plugins
     public interface IPlugin
     {
         void Initialize(IConfig config);
-        void Deinitialize();
 
         void OnQueryMessage(object sender, IrcEventArgs e);
         void OnChannelMessage(object sender, IrcEventArgs e);

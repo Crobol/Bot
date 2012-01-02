@@ -32,10 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Meebey.SmartIrc4net">
-      <HintPath>..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
+      <HintPath>..\..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
     <Reference Include="Nini">
-      <HintPath>..\Libraries\Nini.dll</HintPath>
+      <HintPath>..\..\Libraries\Nini.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />

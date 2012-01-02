@@ -29,21 +29,12 @@ namespace Bot.Plugins.Logger
                 Directory.CreateDirectory("Logs");
             }
 
-            rawLog = new FileStream("Logs/raw.log", FileMode.Append, FileAccess.Write, FileShare.None, 4096, true);
+            rawLog = new FileStream("Logs/raw.log", FileMode.Append, FileAccess.Write, FileShare.None, 512, true);
 
             Console.WriteLine("Plugin Loaded | Type: Logger");
         }
 
-        public void Deinitialize()
-        {
-
-        }
-
-        public void OnJoin(object sender, JoinEventArgs e)
-        {
-
-        }
-
+        public void OnJoin(object sender, JoinEventArgs e) { }
         public void OnQueryMessage(object sender, IrcEventArgs e) { }
         public void OnChannelMessage(object sender, IrcEventArgs e) { }
         public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e) { }

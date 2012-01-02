@@ -35,11 +35,6 @@ namespace Bot.Plugins.IronPython
             Console.WriteLine("Plugin Loaded | Type: IronPython");
         }
 
-        public void Deinitialize()
-        {
-
-        }
-
         public void OnQueryMessage(object sender, IrcEventArgs e) { }
 
         public void OnChannelMessage(object sender, IrcEventArgs e) 
