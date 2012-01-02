@@ -69,6 +69,7 @@ namespace Bot.Commands
             {
                 Console.WriteLine("Error | " + e.Message);
             }
+
             return "";
         }
     }

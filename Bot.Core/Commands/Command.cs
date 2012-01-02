@@ -10,6 +10,11 @@ namespace Bot.Core.Commands
     {
         public abstract string Name();
 
+        public virtual string Help()
+        {
+            return "No help message available for this command";
+        }
+
         public abstract void Execute(IrcEventArgs e);
     }
 }

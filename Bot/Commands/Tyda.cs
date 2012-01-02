@@ -26,7 +26,14 @@ namespace Bot.Commands
 
             HtmlNode node = doc.DocumentNode.SelectSingleNode("//div [@class = 'tyda_content']/descendant::a [@id = 'tyda_transR6']");
             
-            return new AsyncCommandCompletedEventArgs(e.Data.Channel, "Tyda.se: " + node.InnerText);
+            string message = "";
+
+            if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
+                message = "Tyda.se: " + node.InnerText;
+            else
+                message = "Hittade inget resultat";
+
+            return new AsyncCommandCompletedEventArgs(e.Data.Channel, message);
         }
     }
 }

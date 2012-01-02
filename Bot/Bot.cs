@@ -24,18 +24,20 @@ namespace Bot
     {
         #region Members
 
-        protected static bool quit = false;
+        protected IrcClient irc = null;
+        protected ServerDescriptor server = null;
 
         [ImportMany(AllowRecomposition = true)]
         public IEnumerable<IPlugin> Plugins { get; set; }
 
         protected Dictionary<string, Command> commands = new Dictionary<string, Command>();
         protected IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
-        protected ServerDescriptor server = null;
         protected IConfig config = null;
-        protected IrcClient irc = null;
+        
         protected bool silent = true;
         protected string commandIdentifier = "!";
+
+        protected static bool quit = false;
 
         #endregion
 
@@ -78,10 +80,15 @@ namespace Bot
             container.ComposeParts(this);
         }
 
+        public void Connect()
+        {
+            Connect(server);
+        }
+
         /// <summary>
         /// Connects to server according to "server"
         /// </summary>
-        public void Connect()
+        public void Connect(ServerDescriptor server)
         {
             if (server == null)
                 throw new NullReferenceException();
@@ -91,7 +98,7 @@ namespace Bot
 
             // Settings
             irc.Encoding = System.Text.Encoding.UTF8;
-            irc.SendDelay = 0;
+            irc.SendDelay = config.GetInt("send-delay", 200);
             irc.ActiveChannelSyncing = false;
             irc.UseSsl = server.UseSsl;
 
@@ -169,7 +176,6 @@ namespace Bot
 
             do
             {
-                
                 string input = Console.ReadLine();
                 if (input == "die")
                     quit = true;
@@ -287,17 +293,36 @@ namespace Bot
                     Console.WriteLine("Error | Message: " + ex.Message);
                 }
             }
+            else if (e.Data.Message.StartsWith(commandIdentifier + "help"))
+            {
+                if (e.Data.MessageArray.Count() > 1 && commands.ContainsKey(commandIdentifier + e.Data.MessageArray[1]))
+                    e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel,
+                        commands[commandIdentifier + e.Data.MessageArray[1]].Name() + ": " + commands[commandIdentifier + e.Data.MessageArray[1]].Help());
+                else
+                {
+                    string message = "Available commands: ";
+                    foreach (Command command in commands.Values)
+                    {
+                        message += command.Name();
+                        if (command != commands.Values.Last())
+                            message += ", ";
+                    }
+                    e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+                }   
+            }
+            else
+            {
+                foreach (AsyncProcessor processor in asyncProcessors)
+                {
+                    processor.Execute(e);
+                }
+            }
 
             // TODO: Real authentication
             if (e.Data.Nick == "wqz" && e.Data.MessageArray[0] == "!quit" || e.Data.MessageArray[0] == "!die")
             {
                 irc.Disconnect();
                 quit = true;
-            }
-
-            foreach (AsyncProcessor processor in asyncProcessors)
-            {
-                processor.Execute(e);
             }
         }
 
