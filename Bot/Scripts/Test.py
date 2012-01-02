@@ -21,3 +21,12 @@ class PythonVersion(Command):
 
 	def Name(self):
 		return "pv"
+
+
+class Sing(Command):
+
+	def Execute(self, e):
+		e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "Trodilididoo~~")
+
+	def Name(self):
+		return "sing"

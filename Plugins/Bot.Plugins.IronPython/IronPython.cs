@@ -71,14 +71,26 @@ namespace Bot.Plugins.IronPython
             if (commands != null)
                 commands.Clear();
 
-            string[] files = Directory.GetFiles(directory);
+            string[] files = Directory.GetFiles(directory, "*.py");
             foreach (string file in files)
             {
-                var scope = ipy.ExecuteFile(file);
+                ScriptScope scope = null;
+                try
+                {
+                    scope = ipy.ExecuteFile(file);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error | Failed to load Python-script \"" + file + "\" | " + e.Message);
+                }
+
+                if (scope == null)
+                    continue;
+
                 IEnumerable<string> variableNames = scope.GetVariableNames();
                 foreach (string variable in variableNames.Where(x => !x.StartsWith("_")))
                 {
-                    // TODO: Cleaner way to load classes that inherits "Command"?
+                    // TODO: Cleaner way to load classes that inherits "Command"? Does it even need to be classes? Would simple callback functions suffice?
                     try
                     {
                         var pythonCommandType = scope.GetVariable(variable);
@@ -90,7 +102,7 @@ namespace Bot.Plugins.IronPython
                     }
                     catch (Exception e)
                     {
-
+                        Console.WriteLine("Error | Failed to load Python class/function/module | " + e.Message);
                     }
                 }
             }
