@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.Logger", "Plugi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.IronPython", "Plugins\Bot.Plugins.IronPython\Bot.Plugins.IronPython.csproj", "{E10EE22A-7387-43BB-914F-6F2A1671EC70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.Phalanger", "Plugins\Bot.Plugins.Phalanger\Bot.Plugins.Phalanger.csproj", "{A432D8C6-944C-4338-A51E-DF5F1715D3EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,16 @@ Global
 		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|x86.ActiveCfg = Release|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,5 +80,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{481C20DB-929C-454B-8146-0B7DF8D89ACD} = {C3B5C15B-41A4-4D03-9958-1D39D22C6ABE}
 		{E10EE22A-7387-43BB-914F-6F2A1671EC70} = {C3B5C15B-41A4-4D03-9958-1D39D22C6ABE}
+		{A432D8C6-944C-4338-A51E-DF5F1715D3EE} = {C3B5C15B-41A4-4D03-9958-1D39D22C6ABE}
 	EndGlobalSection
 EndGlobal

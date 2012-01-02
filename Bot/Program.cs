@@ -15,6 +15,15 @@ namespace Bot
     {
         static void Main(string[] args)
         {
+            northwindEFEntities db = new northwindEFEntities();
+            
+            var customers = db.Customers.Take(1);
+
+            foreach (var customer in customers)
+            {
+                Console.WriteLine(customer.ContactName);
+            }
+
             Bot.Run("config");
         }
     }
