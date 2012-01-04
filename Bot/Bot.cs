@@ -6,14 +6,16 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
+using Bot.Core;
 using Bot.Core.Commands;
 using Bot.Core.Processors;
+using Bot.Core.Plugins;
 using Bot.Commands;
 using Bot.Processors;
-using Bot.Core.Plugins;
 using Meebey.SmartIrc4net;
 using HtmlAgilityPack;
 using Nini.Config;
@@ -27,14 +29,18 @@ namespace Bot
         protected IrcClient irc = null;
         protected ServerDescriptor server = null;
 
-        [ImportMany(AllowRecomposition = true)]
-        public IEnumerable<IPlugin> Plugins { get; set; }
+        BotEntities db = new BotEntities();
+
+        [ImportMany]
+        protected IEnumerable<IPlugin> Plugins { get; set; }
+
+        protected IList<IrcUser> authedUsers = new List<IrcUser>();
 
         protected Dictionary<string, Command> commands = new Dictionary<string, Command>();
         protected IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
         protected IConfig config = null;
         
-        protected bool silent = true;
+        protected bool silent = false;
         protected string commandIdentifier = "!";
 
         protected static bool quit = false;
@@ -102,11 +108,14 @@ namespace Bot
             irc.ActiveChannelSyncing = false;
             irc.UseSsl = server.UseSsl;
 
+            IrcUser user = irc.GetIrcUser("wqz");
+
             // Bind event handlers
             irc.OnQueryMessage += new IrcEventHandler(OnQueryMessage);
             irc.OnChannelMessage += new IrcEventHandler(OnChannelMessage);
             irc.OnError += new Meebey.SmartIrc4net.ErrorEventHandler(OnError);
             irc.OnRawMessage += new IrcEventHandler(OnRawMessage);
+            irc.OnPart += new PartEventHandler(OnPart);
 
             Console.WriteLine("Initializing plugins...");
             foreach (var plugin in Plugins)
@@ -275,9 +284,35 @@ namespace Bot
                 irc.SendMessage(e.SendType, e.Destination, e.Message);
         }
 
+        public void OnPart(object sender, PartEventArgs e)
+        {
+            /*IList<WhoInfo> who = e.Data.Irc.GetWhoList(e.Who);
+
+            if (who != null && who.Any())
+            {
+                Console.WriteLine("");
+            }*/
+        }
+
         public void OnQueryMessage(object sender, IrcEventArgs e)
         {
+            if (e.Data.Message.StartsWith(commandIdentifier + "auth"))
+            {
+                if (e.Data.MessageArray.Count() > 2)
+                {
+                    SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
+                    string password = sha512hasher.ComputeHash(Encoding.Default.GetBytes(e.Data.MessageArray[2])).ByteArrayToString();
+                    string username = e.Data.MessageArray[1];
 
+                    var users = from x in db.Users where x.Username == username && x.Password == password select x;
+
+                    if (users.Any())
+                    {
+                        authedUsers.Add(e.Data.Irc.GetIrcUser(e.Data.Nick));
+                        e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "Authed");
+                    }
+                }
+            }
         }
 
         public void OnChannelMessage(object sender, IrcEventArgs e)
@@ -309,6 +344,20 @@ namespace Bot
                     }
                     e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
                 }   
+            }
+            else if (e.Data.Message.StartsWith(commandIdentifier + "add-user"))
+            {
+                if (e.Data.MessageArray.Count() > 2)
+                {
+                    SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
+
+                    User user = new User();
+                    user.Username = e.Data.MessageArray[1];
+                    user.Password = sha512hasher.ComputeHash(Encoding.Default.GetBytes(e.Data.MessageArray[2])).ByteArrayToString();
+
+                    db.Users.AddObject(user);
+                    db.SaveChanges();
+                }
             }
             else
             {

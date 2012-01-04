@@ -17,5 +17,17 @@ namespace Bot.Core
             a[0] = char.ToUpper(a[0]);
             return new string(a);
         }
+
+        public static string ByteArrayToString(this byte[] bytes)
+        {
+            StringBuilder output = new StringBuilder();
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                output.Append(bytes[i].ToString("x2"));
+            }
+
+            return output.ToString();
+        }
     }
 }

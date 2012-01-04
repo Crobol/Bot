@@ -82,11 +82,6 @@
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Commands\Tyda.cs" />
     <Compile Include="Commands\Wikipedia.cs" />
-    <Compile Include="NorthwindModel1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>NorthwindModel.edmx</DependentUpon>
-    </Compile>
     <Compile Include="Processors\UrlTitles.cs" />
     <Compile Include="Commands\NowPlaying.cs" />
     <Compile Include="Program.cs" />
@@ -125,14 +120,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.Config" />
+    <None Include="App.Config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Scripts\Test.py" />
-  </ItemGroup>
-  <ItemGroup>
-    <EntityDeploy Include="NorthwindModel.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>NorthwindModel1.Designer.cs</LastGenOutput>
-    </EntityDeploy>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
