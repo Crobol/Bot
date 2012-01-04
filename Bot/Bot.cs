@@ -77,6 +77,7 @@ namespace Bot
         {
             var catalog = new DirectoryCatalog(pluginFolder);
             var container = new CompositionContainer(catalog);
+            container.ComposeExportedValue<Dictionary<string, Command>>("commands", commands);
             container.ComposeParts(this);
         }
 

@@ -16,6 +16,11 @@ namespace Bot.Commands
             return "t";
         }
 
+        public override string Help()
+        {
+            return "Makes a Tyda.se search with the first argument as keyword and returns the first result";
+        }
+
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string url = "http://tyda.se/search?form=1&w=" + e.Data.MessageArray.LastOrDefault();
@@ -34,6 +39,6 @@ namespace Bot.Commands
                 message = "Hittade inget resultat";
 
             return new AsyncCommandCompletedEventArgs(e.Data.Channel, message);
-        }
+        } 
     }
 }

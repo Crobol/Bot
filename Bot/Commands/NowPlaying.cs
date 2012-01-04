@@ -28,6 +28,11 @@ namespace Bot.Commands
             return "np";
         }
 
+        public override string Help()
+        {
+            return "Fetches now playing information based on first argumetent or, if left out, the nickname of calling user";
+        }
+
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string nick = "";

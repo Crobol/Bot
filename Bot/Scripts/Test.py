@@ -22,6 +22,9 @@ class PythonVersion(Command):
 	def Name(self):
 		return "pv"
 
+	def Help(self):
+		return "Displays the current IronPython version"
+
 
 class Sing(Command):
 
