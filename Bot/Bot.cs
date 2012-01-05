@@ -40,7 +40,7 @@ namespace Bot
         protected IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
         protected IConfig config = null;
         
-        protected bool silent = false;
+        protected bool silent = true;
         protected string commandIdentifier = "!";
 
         protected static bool quit = false;
@@ -108,7 +108,6 @@ namespace Bot
             irc.SendDelay = config.GetInt("send-delay", 200);
             irc.ActiveChannelSyncing = true;
             irc.UseSsl = server.UseSsl;
-
             IrcUser user = irc.GetIrcUser("wqz");
 
             // Bind event handlers
@@ -206,6 +205,7 @@ namespace Bot
 
             List<ServerDescriptor> servers = new List<ServerDescriptor>();
             IEnumerator enumerator = source.Configs.GetEnumerator();
+
             while (enumerator.MoveNext())
             {
                 IConfig config = (IConfig)enumerator.Current;

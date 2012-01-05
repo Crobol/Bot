@@ -17,7 +17,7 @@ namespace Bot.Plugins.IronPython
     [Export(typeof(IPlugin))]
     public class IronPython : IPlugin
     {
-        protected ScriptRuntime ipy = null;
+        protected ScriptEngine ipy = null;
         protected Dictionary<string, Command> commands;
         protected IConfig config = null;
         string commandIdentifier = "!";
@@ -34,7 +34,7 @@ namespace Bot.Plugins.IronPython
             commandIdentifier = config.GetString("command-identifier", "!");
 
             Console.WriteLine("Creating Python runtime...");
-            ipy = Python.CreateRuntime();
+            ipy = Python.CreateEngine();
 
             LoadScripts(config.GetString("script-folder", "Scripts"));
 
@@ -56,7 +56,12 @@ namespace Bot.Plugins.IronPython
                 ScriptScope scope = null;
                 try
                 {
-                    scope = ipy.ExecuteFile(file);
+                    scope = ipy.CreateScope();
+                    // Set scope variables here
+
+                    ScriptSource scriptSource = ipy.CreateScriptSourceFromFile(file);
+                    CompiledCode compiledCode = scriptSource.Compile();
+                    compiledCode.Execute(scope);
                 }
                 catch (Exception e)
                 {
