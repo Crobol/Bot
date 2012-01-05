@@ -18,9 +18,15 @@ namespace Bot.Plugins.IronPython
     public class IronPython : IPlugin
     {
         protected ScriptRuntime ipy = null;
-        protected Dictionary<string, Command> commands = new Dictionary<string, Command>();
+        protected Dictionary<string, Command> commands;
         protected IConfig config = null;
         string commandIdentifier = "!";
+
+        [ImportingConstructor]
+        public IronPython([Import("commands")] Dictionary<string, Command> commands)
+        {
+            this.commands = commands;
+        }
 
         public void Initialize(IConfig config)
         {
@@ -36,35 +42,13 @@ namespace Bot.Plugins.IronPython
         }
 
         public void OnQueryMessage(object sender, IrcEventArgs e) { }
-
-        public void OnChannelMessage(object sender, IrcEventArgs e) 
-        {
-            if (e.Data.Message.StartsWith(commandIdentifier) && commands.ContainsKey(e.Data.MessageArray[0]))
-            {
-                try
-                {
-                    commands[e.Data.MessageArray[0]].Execute(e);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error | Message: " + ex.Message);
-                }
-            }
-            else if (e.Data.Message.StartsWith(commandIdentifier + "reload-scripts"))
-            {
-                LoadScripts(config.GetString("script-folder", "Scripts"));
-            }
-        }
-
+        public void OnChannelMessage(object sender, IrcEventArgs e) { }
         public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e) { }
         public void OnRawMessage(object sender, IrcEventArgs e) { }
 
         void LoadScripts(string directory)
         {
             Console.WriteLine("Loading Python scripts...");
-
-            if (commands != null)
-                commands.Clear();
 
             string[] files = Directory.GetFiles(directory, "*.py");
             foreach (string file in files)
@@ -92,6 +76,8 @@ namespace Bot.Plugins.IronPython
                         if (PythonType.Get__name__(pythonCommandType.__bases__[0]) == "Command")
                         {
                             var pythonCommand = ipy.Operations.CreateInstance(pythonCommandType);
+                            if (commands.ContainsKey(commandIdentifier + pythonCommand.Name()))
+                                commands.Remove(commandIdentifier + pythonCommand.Name());
                             commands.Add(commandIdentifier + pythonCommand.Name(), pythonCommand);
                         }
                     }
