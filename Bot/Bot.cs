@@ -105,7 +105,7 @@ namespace Bot
             // Settings
             irc.Encoding = System.Text.Encoding.UTF8;
             irc.SendDelay = config.GetInt("send-delay", 200);
-            irc.ActiveChannelSyncing = false;
+            irc.ActiveChannelSyncing = true;
             irc.UseSsl = server.UseSsl;
 
             IrcUser user = irc.GetIrcUser("wqz");
@@ -286,12 +286,13 @@ namespace Bot
 
         public void OnPart(object sender, PartEventArgs e)
         {
-            /*IList<WhoInfo> who = e.Data.Irc.GetWhoList(e.Who);
+            IrcUser user = e.Data.Irc.GetIrcUser(e.Who);
 
-            if (who != null && who.Any())
+            if (user != null)
             {
-                Console.WriteLine("");
-            }*/
+                if (authedUsers.Remove(user))
+                    e.Data.Irc.SendMessage(SendType.Message, e.Channel, "Deauthed");
+            }
         }
 
         public void OnQueryMessage(object sender, IrcEventArgs e)
