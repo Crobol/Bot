@@ -6,7 +6,7 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Core.Commands
 {
-    public abstract class Command
+    public abstract class Command : ICommand
     {
         public abstract string Name();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using Bot.Core;
@@ -8,11 +9,13 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
+    [Export(typeof(Command))]
     class AddUser : Command
     {
         UserService userService;
 
-        public AddUser(UserService userService)
+        [ImportingConstructor]
+        public AddUser([Import("UserService")] UserService userService)
         {
             this.userService = userService;
         }
@@ -54,17 +57,19 @@ namespace Bot.Commands
             }
             else
             {
-                e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "Not authorized");
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");
                 return;
             }
         }
     }
 
+    [Export(typeof(Command))]
     class AuthenticateUser : Command
     {
         UserService userService;
 
-        public AuthenticateUser(UserService userService)
+        [ImportingConstructor]
+        public AuthenticateUser([Import("UserService")] UserService userService)
         {
             this.userService = userService;
         }
@@ -98,11 +103,13 @@ namespace Bot.Commands
         }
     }
 
+    [Export(typeof(Command))]
     class ListAuthenticatedUsers : Command
     {
         UserService userService;
 
-        public ListAuthenticatedUsers(UserService userService)
+        [ImportingConstructor]
+        public ListAuthenticatedUsers([Import("UserService")] UserService userService)
         {
             this.userService = userService;
         }

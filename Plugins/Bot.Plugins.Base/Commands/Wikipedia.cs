@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
 using System.Runtime.Remoting.Messaging;
@@ -13,8 +13,16 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
+    [Export(typeof(Command))]
     class Wikipedia : AsyncCommand
     {
+        // TODO: Make command completed from AsyncCommand to Command to avoid this
+        [ImportingConstructor]
+        public Wikipedia([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        {
+            this.CommandCompleted += onAsyncCommandCompleted;
+        }
+
         public override string Name()
         {
             return "w";

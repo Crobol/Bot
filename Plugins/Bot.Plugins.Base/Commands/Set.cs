@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using Bot.Core.Commands;
@@ -8,11 +9,13 @@ using Nini.Config;
 
 namespace Bot.Commands
 {
+    [Export(typeof(Command))]
     class Set : Command
     {
         IConfig config = null;
 
-        public Set(IConfig config)
+        [ImportingConstructor]
+        public Set([Import("Config")] IConfig config)
         {
             this.config = config;
         }

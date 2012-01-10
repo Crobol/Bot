@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -11,6 +12,7 @@ using Nini.Config;
 
 namespace Bot.Processors
 {
+    [Export(typeof(Processor))]
     class UrlTitles : AsyncProcessor
     {
         private List<Regex> urlPatterns = null;
@@ -26,7 +28,8 @@ namespace Bot.Processors
             this.urlPatterns = urlPatterns;
         }
 
-        public UrlTitles(IConfig config)
+        [ImportingConstructor]
+        public UrlTitles([Import("Config")] IConfig config)
         {
             string[] patternStrings = config.GetString("title-whitelist").Split(',');
 

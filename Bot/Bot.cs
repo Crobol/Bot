@@ -13,8 +13,6 @@ using Bot.Core;
 using Bot.Core.Commands;
 using Bot.Core.Processors;
 using Bot.Core.Plugins;
-using Bot.Commands;
-using Bot.Processors;
 using Meebey.SmartIrc4net;
 using HtmlAgilityPack;
 using Nini.Config;
@@ -34,8 +32,13 @@ namespace Bot
         [ImportMany]
         private IEnumerable<IPlugin> Plugins { get; set; }
 
+        [ImportMany]
+        private IEnumerable<Command> Commands { get; set; }
         private Dictionary<string, Command> commands = new Dictionary<string, Command>();
-        private IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
+
+        [ImportMany]
+        private IEnumerable<Processor> Processors { get; set; }
+
         private IConfig config = null;
 
         private bool silent = true;
@@ -50,14 +53,12 @@ namespace Bot
         public Bot()
         {
             userService = new UserService(db);
-            RegisterCommands();
         }
 
         public Bot(ServerDescriptor server)
         {
             this.server = server;
             userService = new UserService(db);
-            RegisterCommands();
         }
 
         public Bot(ServerDescriptor server, IConfig config)
@@ -66,26 +67,28 @@ namespace Bot
             this.config = config;
             userService = new UserService(db);
             Console.WriteLine("Loading plugins...");
-            Compose(config.GetString("plugin-folder", "Plugins"));
-            RegisterCommands(config);
+            LoadPlugins(config.GetString("plugin-folder", "Plugins"));
+            MapCommands(config);
         }
 
         public Bot(string host, int port, bool useSsl, string[] channels)
         {
             userService = new UserService(db);
             server = new ServerDescriptor(host, port, useSsl, channels);
-            RegisterCommands();
         }
 
         #endregion
 
         #region Initialization
 
-        private void Compose(string pluginFolder = "Plugins")
+        private void LoadPlugins(string pluginFolder = "Plugins")
         {
             var catalog = new DirectoryCatalog(pluginFolder);
             var container = new CompositionContainer(catalog);
-            container.ComposeExportedValue<Dictionary<string, Command>>("commands", commands);
+            container.ComposeExportedValue<Dictionary<string, Command>>("Commands", commands);
+            container.ComposeExportedValue<IConfig>("Config", config);
+            container.ComposeExportedValue<AsyncCommand.AsyncCommandCompletedEventHandler>("AsyncCommandCompletedEventHandler", OnAsyncCommandComplete);
+            container.ComposeExportedValue<UserService>("UserService", userService);
             container.ComposeParts(this);
         }
 
@@ -234,42 +237,15 @@ namespace Bot
         /// <summary>
         /// Register user invocable commands
         /// </summary>
-        private void RegisterCommands()
+        private void MapCommands(IConfig config)
         {
-            throw new NotImplementedException();
-        }
+            Console.WriteLine("Mapping Commands...");
 
-        /// <summary>
-        /// Register user invocable commands
-        /// </summary>
-        private void RegisterCommands(IConfig config)
-        {
-            Console.WriteLine("Registering Commands...");
-
-            // TODO: Make this process automatic
-            AsyncCommand nowPlaying = new NowPlaying(config);
-            nowPlaying.CommandCompleted += OnAsyncCommandComplete;
-            commands.Add(commandIdentifier + nowPlaying.Name(), nowPlaying);
-
-            AsyncCommand wikipedia = new Wikipedia();
-            wikipedia.CommandCompleted += OnAsyncCommandComplete;
-            commands.Add(commandIdentifier + wikipedia.Name(), wikipedia);
-
-            AsyncCommand tyda = new Tyda();
-            tyda.CommandCompleted += OnAsyncCommandComplete;
-            commands.Add(commandIdentifier + tyda.Name(), tyda);
-
-            commands.Add(commandIdentifier + "say", new Say());
-            commands.Add(commandIdentifier + "join", new Join());
-            commands.Add(commandIdentifier + "part", new Part());
-            commands.Add(commandIdentifier + "set", new Set(config));
-            commands.Add(commandIdentifier + "auth", new AuthenticateUser(userService));
-            commands.Add(commandIdentifier + "add-user", new AddUser(userService));
-            commands.Add(commandIdentifier + "list-authed-user", new ListAuthenticatedUsers(userService));
-
-            // Register processors
-            AsyncProcessor urlTitles = new UrlTitles(config);
-            asyncProcessors.Add(urlTitles);
+            // Create name -> command mapping
+            foreach (Command command in Commands)
+            {
+                commands[commandIdentifier + command.Name()] = command;
+            }
         }
 
         #endregion
@@ -366,7 +342,7 @@ namespace Bot
             }
             else
             {
-                foreach (AsyncProcessor processor in asyncProcessors)
+                foreach (Processor processor in Processors)
                 {
                     processor.Execute(e);
                 }

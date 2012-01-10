@@ -8,6 +8,8 @@ namespace Bot.Core.Commands
 {
     interface ICommand
     {
+        string Name();
+        string Help();
         void Execute(IrcEventArgs e);
     }
 }

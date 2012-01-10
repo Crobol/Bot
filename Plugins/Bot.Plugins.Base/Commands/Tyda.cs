@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using Bot.Core;
@@ -9,8 +10,16 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
+    [Export(typeof(Command))]
     class Tyda : AsyncCommand
     {
+        // TODO: Make command completed from AsyncCommand to Command to avoid this
+        [ImportingConstructor]
+        public Tyda([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        {
+            this.CommandCompleted += onAsyncCommandCompleted;
+        }
+
         public override string Name()
         {
             return "t";
@@ -36,7 +45,7 @@ namespace Bot.Commands
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
                 message = "Tyda.se: " + node.InnerText;
             else
-                message = "Hittade inget resultat";
+                message = "No results found";
 
             return new AsyncCommandCompletedEventArgs(e.Data.Channel, message);
         } 

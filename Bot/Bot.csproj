@@ -75,13 +75,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
-    <Compile Include="Commands\IRC.cs" />
-    <Compile Include="Commands\Set.cs" />
-    <Compile Include="Commands\Tyda.cs" />
-    <Compile Include="Commands\UserServiceCommands.cs" />
-    <Compile Include="Commands\Wikipedia.cs" />
-    <Compile Include="Processors\UrlTitles.cs" />
-    <Compile Include="Commands\NowPlaying.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerDescriptor.cs" />
@@ -110,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Plugins\" />
+    <Folder Include="Processors\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bot.Core\Bot.Core.csproj">
@@ -121,7 +115,7 @@
     <None Include="App.Config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Scripts\Test.py" />
+    <None Include="Scripts\Demo.py" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

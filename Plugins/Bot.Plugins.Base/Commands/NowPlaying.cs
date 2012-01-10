@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
 using System.Runtime.Remoting.Messaging;
@@ -14,13 +14,16 @@ using Nini.Config;
 
 namespace Bot.Commands
 {
+    [Export(typeof(Command))]
     class NowPlaying : AsyncCommand
     {
         IConfig config = null;
 
-        public NowPlaying(IConfig config)
+        [ImportingConstructor]
+        public NowPlaying([Import("Config")] IConfig config, [Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
         {
             this.config = config;
+            this.CommandCompleted += onAsyncCommandCompleted;
         }
 
         public override string Name()
