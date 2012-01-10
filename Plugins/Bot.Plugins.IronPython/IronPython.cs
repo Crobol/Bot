@@ -5,12 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Scripting.Hosting;
-using Bot.Core.Plugins;
-using Bot.Core.Commands;
-using IronPython.Runtime.Types;
-using IronPython.Hosting;
 using Meebey.SmartIrc4net;
 using Nini.Config;
+using IronPython.Runtime.Types;
+using IronPython.Hosting;
+using Bot.Core;
+using Bot.Core.Plugins;
+using Bot.Core.Commands;
 
 namespace Bot.Plugins.IronPython
 {
@@ -20,12 +21,14 @@ namespace Bot.Plugins.IronPython
         private ScriptEngine ipy = null;
         private Dictionary<string, Command> commands;
         private IConfig config = null;
+        private UserService userService = null;
         string commandIdentifier = "!";
 
         [ImportingConstructor]
-        public IronPython([Import("commands")] Dictionary<string, Command> commands)
+        public IronPython([Import("Commands")] Dictionary<string, Command> commands, [Import("UserService")] UserService userService)
         {
             this.commands = commands;
+            this.userService = userService;
         }
 
         public void Initialize(IConfig config)
@@ -42,7 +45,13 @@ namespace Bot.Plugins.IronPython
         }
 
         public void OnQueryMessage(object sender, IrcEventArgs e) { }
-        public void OnChannelMessage(object sender, IrcEventArgs e) { }
+        
+        public void OnChannelMessage(object sender, IrcEventArgs e)
+        {
+            if (e.Data.Message.StartsWith(commandIdentifier + "reload-scripts"))
+                Initialize(config);
+        }
+
         public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e) { }
         public void OnRawMessage(object sender, IrcEventArgs e) { }
 
@@ -57,7 +66,7 @@ namespace Bot.Plugins.IronPython
                 try
                 {
                     scope = ipy.CreateScope();
-                    // Set scope variables here
+                    scope.SetVariable("userService", userService);
 
                     ScriptSource scriptSource = ipy.CreateScriptSourceFromFile(file);
                     CompiledCode compiledCode = scriptSource.Compile();
