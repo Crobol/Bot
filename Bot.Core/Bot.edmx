@@ -12,9 +12,12 @@
           <Key>
             <PropertyRef Name="Id" />
           </Key>
-          <Property Name="Id" Type="integer" Nullable="false" />
+          <Property Name="Id" Type="integer" Nullable="false" StoreGeneratedPattern="Identity" />
           <Property Name="Username" Type="nvarchar" />
           <Property Name="Password" Type="nvarchar" />
+          <Property Name="LastNick" Type="nvarchar" />
+          <Property Name="LastIdent" Type="nvarchar" />
+          <Property Name="UserLevel" Type="integer" Nullable="false" />
         </EntityType>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -27,9 +30,12 @@
           <Key>
             <PropertyRef Name="Id" />
           </Key>
-          <Property Type="Int64" Name="Id" Nullable="false" />
+          <Property Type="Int64" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Type="String" Name="Username" MaxLength="2147483647" FixedLength="false" Unicode="true" />
           <Property Type="String" Name="Password" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="LastNick" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Type="String" Name="LastIdent" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Type="Int64" Name="UserLevel" Nullable="false" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -40,6 +46,9 @@
           <EntitySetMapping Name="Users">
             <EntityTypeMapping TypeName="BotModel.User">
               <MappingFragment StoreEntitySet="User">
+                <ScalarProperty Name="LastIdent" ColumnName="LastIdent" />
+                <ScalarProperty Name="LastNick" ColumnName="LastNick" />
+                <ScalarProperty Name="UserLevel" ColumnName="UserLevel" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Username" ColumnName="Username" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
@@ -67,7 +76,7 @@
     <!-- Diagram content (shape and connector positions) -->
     <Diagrams>
       <Diagram Name="Bot">
-        <EntityTypeShape EntityType="BotModel.User" Width="1.5" PointX="0.75" PointY="0.75" Height="1.5956835937499996" />
+        <EntityTypeShape EntityType="BotModel.User" Width="1.5" PointX="4" PointY="1.375" Height="2.172587890625" />
       </Diagram>
     </Diagrams>
   </Designer>

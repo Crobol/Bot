@@ -22,6 +22,11 @@ namespace Bot.Commands
             return "set";
         }
 
+        public override string Help()
+        {
+            return "Sets config value to <value>. Parameters: <valuename> <value>";
+        }
+
         public override void Execute(IrcEventArgs e)
         {
             string[] args = e.Data.Message.Split(new char[] { ' ' }, 3);

@@ -7,7 +7,6 @@ using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Bot.Core;
@@ -26,24 +25,23 @@ namespace Bot
     {
         #region Members
 
-        protected IrcClient irc = null;
+        private IrcClient irc = null;
         protected ServerDescriptor server = null;
 
+        UserService userService = null;
         BotEntities db = new BotEntities();
 
         [ImportMany]
-        protected IEnumerable<IPlugin> Plugins { get; set; }
+        private IEnumerable<IPlugin> Plugins { get; set; }
 
-        protected IList<IrcUser> authedUsers = new List<IrcUser>();
+        private Dictionary<string, Command> commands = new Dictionary<string, Command>();
+        private IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
+        private IConfig config = null;
 
-        protected Dictionary<string, Command> commands = new Dictionary<string, Command>();
-        protected IList<AsyncProcessor> asyncProcessors = new List<AsyncProcessor>();
-        protected IConfig config = null;
-        
-        protected bool silent = true;
-        protected string commandIdentifier = "!";
+        private bool silent = true;
+        private string commandIdentifier = "!";
 
-        protected static bool quit = false;
+        private static bool quit = false;
 
         #endregion
 
@@ -51,12 +49,14 @@ namespace Bot
 
         public Bot()
         {
+            userService = new UserService(db);
             RegisterCommands();
         }
 
         public Bot(ServerDescriptor server)
         {
             this.server = server;
+            userService = new UserService(db);
             RegisterCommands();
         }
 
@@ -64,6 +64,7 @@ namespace Bot
         {
             this.server = server;
             this.config = config;
+            userService = new UserService(db);
             Console.WriteLine("Loading plugins...");
             Compose(config.GetString("plugin-folder", "Plugins"));
             RegisterCommands(config);
@@ -71,6 +72,7 @@ namespace Bot
 
         public Bot(string host, int port, bool useSsl, string[] channels)
         {
+            userService = new UserService(db);
             server = new ServerDescriptor(host, port, useSsl, channels);
             RegisterCommands();
         }
@@ -93,12 +95,12 @@ namespace Bot
         }
 
         /// <summary>
-        /// Connects to server according to "server"
+        /// Creates and sets up an IrcClient instance and connects to a server according to "server"
         /// </summary>
         public void Connect(ServerDescriptor server)
         {
             if (server == null)
-                throw new NullReferenceException();
+                throw new ArgumentNullException();
 
             Thread.CurrentThread.Name = server.Host;
             irc = new IrcClient();
@@ -138,7 +140,11 @@ namespace Bot
 
             try
             {
-                irc.Login("slave", "slave", 0, "slave");
+                irc.Login(config.GetString("nick", "slave"), 
+                    config.GetString("realname", "slave"), 
+                    0, 
+                    config.GetString("username", "slave")
+                );
 
                 foreach (string channel in server.Channels)
                     irc.RfcJoin(channel);
@@ -230,7 +236,7 @@ namespace Bot
         /// </summary>
         private void RegisterCommands()
         {
-            
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -257,22 +263,13 @@ namespace Bot
             commands.Add(commandIdentifier + "join", new Join());
             commands.Add(commandIdentifier + "part", new Part());
             commands.Add(commandIdentifier + "set", new Set(config));
+            commands.Add(commandIdentifier + "auth", new AuthenticateUser(userService));
+            commands.Add(commandIdentifier + "add-user", new AddUser(userService));
+            commands.Add(commandIdentifier + "list-authed-user", new ListAuthenticatedUsers(userService));
 
             // Register processors
             AsyncProcessor urlTitles = new UrlTitles(config);
             asyncProcessors.Add(urlTitles);
-        }
-
-        #endregion
-
-        #region Getters/setters
-
-        public IrcClient Irc 
-        {
-            get
-            {
-                return irc;
-            }
         }
 
         #endregion
@@ -287,38 +284,58 @@ namespace Bot
 
         public void OnPart(object sender, PartEventArgs e)
         {
-            IrcUser user = e.Data.Irc.GetIrcUser(e.Who);
-
-            if (user != null)
+            if (e.Data.Irc.ActiveChannelSyncing)
             {
-                if (authedUsers.Remove(user))
-                    e.Data.Irc.SendMessage(SendType.Message, e.Channel, "Deauthed");
+                IrcUser user = e.Data.Irc.GetIrcUser(e.Who);
+                if (user != null)
+                {
+                    userService.DeauthenticateUser(user.Host);
+                }
+            }
+            else
+            {
+                e.Data.Irc.RfcNames(e.Data.Channel);
             }
         }
 
         public void OnQueryMessage(object sender, IrcEventArgs e)
         {
-            if (e.Data.Message.StartsWith(commandIdentifier + "auth"))
-            {
-                if (e.Data.MessageArray.Count() > 2)
-                {
-                    SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
-                    string password = sha512hasher.ComputeHash(Encoding.Default.GetBytes(e.Data.MessageArray[2])).ByteArrayToString();
-                    string username = e.Data.MessageArray[1];
-
-                    var users = from x in db.Users where x.Username == username && x.Password == password select x;
-
-                    if (users.Any())
-                    {
-                        authedUsers.Add(e.Data.Irc.GetIrcUser(e.Data.Nick));
-                        e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "Authed");
-                    }
-                }
-            }
+            ProcessIrcEvent(e);
         }
 
         public void OnChannelMessage(object sender, IrcEventArgs e)
         {
+            ProcessIrcEvent(e);
+        }
+
+        public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e)
+        {
+            System.Console.WriteLine("Error | Message: " + e.ErrorMessage);
+            Exit();
+        }
+
+        public void OnRawMessage(object sender, IrcEventArgs e)
+        {
+            if (!silent)
+                System.Console.WriteLine("Received | Message: " + e.Data.RawMessage);
+
+            if (e.Data.Irc.PassiveChannelSyncing && e.Data.Type == ReceiveType.Name)
+            {
+                foreach (string channel in e.Data.Irc.JoinedChannels)
+                {
+                    // Keep track of nicks and deauth if user who parted doesn't exist in any of joined channels
+                }
+            }
+        }
+
+        #endregion
+
+        #region Utilities
+
+        public void ProcessIrcEvent(IrcEventArgs e)
+        {
+            User user = userService.GetAuthenticatedUser(e.Data.From);
+
             if (e.Data.Message.StartsWith(commandIdentifier) && commands.ContainsKey(e.Data.MessageArray[0]))
             {
                 try
@@ -345,20 +362,6 @@ namespace Bot
                             message += ", ";
                     }
                     e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
-                }   
-            }
-            else if (e.Data.Message.StartsWith(commandIdentifier + "add-user"))
-            {
-                if (e.Data.MessageArray.Count() > 2)
-                {
-                    SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
-
-                    User user = new User();
-                    user.Username = e.Data.MessageArray[1];
-                    user.Password = sha512hasher.ComputeHash(Encoding.Default.GetBytes(e.Data.MessageArray[2])).ByteArrayToString();
-
-                    db.Users.AddObject(user);
-                    db.SaveChanges();
                 }
             }
             else
@@ -370,28 +373,12 @@ namespace Bot
             }
 
             // TODO: Real authentication
-            if (e.Data.Nick == "wqz" && e.Data.MessageArray[0] == "!quit" || e.Data.MessageArray[0] == "!die")
+            if (user != null && user.UserLevel == 10 && (e.Data.MessageArray[0] == "!quit" || e.Data.MessageArray[0] == "!die"))
             {
                 irc.Disconnect();
                 quit = true;
             }
         }
-
-        public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e)
-        {
-            System.Console.WriteLine("Error | Message: " + e.ErrorMessage);
-            Exit();
-        }
-
-        public void OnRawMessage(object sender, IrcEventArgs e)
-        {
-            if (!silent)
-                System.Console.WriteLine("Received | Message: " + e.Data.RawMessage);
-        }
-
-        #endregion
-
-        #region Utilities
 
         public static void Exit()
         {

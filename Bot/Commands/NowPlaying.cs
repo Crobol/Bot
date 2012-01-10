@@ -30,7 +30,7 @@ namespace Bot.Commands
 
         public override string Help()
         {
-            return "Fetches now playing information based on first argumetent or, if left out, the nickname of calling user";
+            return "Fetches now playing information from last.fm. Parameters: [<username>]";
         }
 
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)

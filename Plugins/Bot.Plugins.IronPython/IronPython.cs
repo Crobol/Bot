@@ -17,9 +17,9 @@ namespace Bot.Plugins.IronPython
     [Export(typeof(IPlugin))]
     public class IronPython : IPlugin
     {
-        protected ScriptEngine ipy = null;
-        protected Dictionary<string, Command> commands;
-        protected IConfig config = null;
+        private ScriptEngine ipy = null;
+        private Dictionary<string, Command> commands;
+        private IConfig config = null;
         string commandIdentifier = "!";
 
         [ImportingConstructor]
@@ -88,7 +88,7 @@ namespace Bot.Plugins.IronPython
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("Error | Failed to load Python class/function/module | " + e.Message);
+                        //Console.WriteLine("Error | Failed to load Python class/function/module | " + e.Message);
                     }
                 }
             }

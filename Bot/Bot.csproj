@@ -81,6 +81,7 @@
     <Compile Include="Commands\IRC.cs" />
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Commands\Tyda.cs" />
+    <Compile Include="Commands\UserServiceCommands.cs" />
     <Compile Include="Commands\Wikipedia.cs" />
     <Compile Include="Processors\UrlTitles.cs" />
     <Compile Include="Commands\NowPlaying.cs" />

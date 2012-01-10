@@ -17,7 +17,7 @@ using System.Runtime.Serialization;
 
 [assembly: EdmSchemaAttribute()]
 
-namespace Bot
+namespace Bot.Core
 {
     #region Contexts
     
@@ -114,10 +114,12 @@ namespace Bot
         /// Create a new User object.
         /// </summary>
         /// <param name="id">Initial value of the Id property.</param>
-        public static User CreateUser(global::System.Int64 id)
+        /// <param name="userLevel">Initial value of the UserLevel property.</param>
+        public static User CreateUser(global::System.Int64 id, global::System.Int64 userLevel)
         {
             User user = new User();
             user.Id = id;
+            user.UserLevel = userLevel;
             return user;
         }
 
@@ -198,6 +200,78 @@ namespace Bot
         private global::System.String _Password;
         partial void OnPasswordChanging(global::System.String value);
         partial void OnPasswordChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Int64 UserLevel
+        {
+            get
+            {
+                return _UserLevel;
+            }
+            set
+            {
+                OnUserLevelChanging(value);
+                ReportPropertyChanging("UserLevel");
+                _UserLevel = StructuralObject.SetValidValue(value);
+                ReportPropertyChanged("UserLevel");
+                OnUserLevelChanged();
+            }
+        }
+        private global::System.Int64 _UserLevel;
+        partial void OnUserLevelChanging(global::System.Int64 value);
+        partial void OnUserLevelChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public global::System.String LastNick
+        {
+            get
+            {
+                return _LastNick;
+            }
+            set
+            {
+                OnLastNickChanging(value);
+                ReportPropertyChanging("LastNick");
+                _LastNick = StructuralObject.SetValidValue(value, true);
+                ReportPropertyChanged("LastNick");
+                OnLastNickChanged();
+            }
+        }
+        private global::System.String _LastNick;
+        partial void OnLastNickChanging(global::System.String value);
+        partial void OnLastNickChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public global::System.String LastIdent
+        {
+            get
+            {
+                return _LastIdent;
+            }
+            set
+            {
+                OnLastIdentChanging(value);
+                ReportPropertyChanging("LastIdent");
+                _LastIdent = StructuralObject.SetValidValue(value, true);
+                ReportPropertyChanged("LastIdent");
+                OnLastIdentChanged();
+            }
+        }
+        private global::System.String _LastIdent;
+        partial void OnLastIdentChanging(global::System.String value);
+        partial void OnLastIdentChanged();
 
         #endregion
     

@@ -18,12 +18,12 @@ namespace Bot.Commands
 
         public override string Help()
         {
-            return "Makes a Tyda.se search with the first argument as keyword and returns the first result";
+            return "Makes a Tyda.se search and returns the first result. Parameters: <expression>";
         }
 
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            string url = "http://tyda.se/search?form=1&w=" + e.Data.MessageArray.LastOrDefault();
+            string url = "http://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
             string html = HtmlHelper.GetFromUrl(url);
 
             HtmlDocument doc = new HtmlDocument();
