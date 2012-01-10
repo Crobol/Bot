@@ -52,9 +52,6 @@
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\Libraries\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="log4net">
-      <HintPath>..\Libraries\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="Meebey.SmartIrc4net">
       <HintPath>..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
@@ -128,7 +125,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)\Scripts" "$(ProjectDir)\bin\Release\Scripts" /s /i /y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)Scripts" "$(ProjectDir)bin\Release\Scripts" /s /i /y
+xcopy "$(ProjectDir)Bot.db" "$(ProjectDir)bin\Release\" /y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
