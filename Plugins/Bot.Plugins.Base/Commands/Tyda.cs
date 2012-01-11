@@ -13,7 +13,7 @@ namespace Bot.Commands
     [Export(typeof(Command))]
     class Tyda : AsyncCommand
     {
-        // TODO: Make command completed from AsyncCommand to Command to avoid this
+        // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
         public Tyda([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
         {
@@ -32,7 +32,7 @@ namespace Bot.Commands
 
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            string url = "http://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
+            string url = "https://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
             string html = HtmlHelper.GetFromUrl(url);
 
             HtmlDocument doc = new HtmlDocument();

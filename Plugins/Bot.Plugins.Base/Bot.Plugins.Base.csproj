@@ -51,8 +51,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\IRC.cs" />
     <Compile Include="Commands\NowPlaying.cs" />
+    <Compile Include="Commands\UrbanDictionary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Commands\Tyda.cs" />

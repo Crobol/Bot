@@ -16,7 +16,14 @@ namespace Bot.Core
             webClient.Proxy = null;
             webClient.Encoding = System.Text.Encoding.UTF8;
 
-            return webClient.DownloadString(url);
+            try
+            {
+                return webClient.DownloadString(url);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 }

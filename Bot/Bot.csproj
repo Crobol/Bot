@@ -103,7 +103,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Plugins\" />
-    <Folder Include="Processors\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bot.Core\Bot.Core.csproj">

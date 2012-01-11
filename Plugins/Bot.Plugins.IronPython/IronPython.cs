@@ -22,7 +22,7 @@ namespace Bot.Plugins.IronPython
         private Dictionary<string, Command> commands;
         private IConfig config = null;
         private UserService userService = null;
-        string commandIdentifier = "!";
+        string commandIdentifier = "!"; // TODO: Don't hard code this
 
         [ImportingConstructor]
         public IronPython([Import("Commands")] Dictionary<string, Command> commands, [Import("UserService")] UserService userService)

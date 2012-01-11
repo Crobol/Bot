@@ -44,6 +44,7 @@ namespace Bot
         private bool silent = true;
         private string commandIdentifier = "!";
 
+        private static readonly DateTime startTime = DateTime.Now;
         private static bool quit = false;
 
         #endregion
@@ -323,22 +324,10 @@ namespace Bot
                     Console.WriteLine("Error | Message: " + ex.Message);
                 }
             }
-            else if (e.Data.Message.StartsWith(commandIdentifier + "help"))
+            else if (e.Data.Message.StartsWith(commandIdentifier + "uptime"))
             {
-                if (e.Data.MessageArray.Count() > 1 && commands.ContainsKey(commandIdentifier + e.Data.MessageArray[1]))
-                    e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel,
-                        commands[commandIdentifier + e.Data.MessageArray[1]].Name() + ": " + commands[commandIdentifier + e.Data.MessageArray[1]].Help());
-                else
-                {
-                    string message = "Available commands: ";
-                    foreach (Command command in commands.Values)
-                    {
-                        message += command.Name();
-                        if (command != commands.Values.Last())
-                            message += ", ";
-                    }
-                    e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
-                }
+                TimeSpan uptime = DateTime.Now - startTime;
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, uptime.Days + " days " + uptime.Hours + "h " + uptime.Minutes + "m");
             }
             else
             {
@@ -348,7 +337,6 @@ namespace Bot
                 }
             }
 
-            // TODO: Real authentication
             if (user != null && user.UserLevel == 10 && (e.Data.MessageArray[0] == "!quit" || e.Data.MessageArray[0] == "!die"))
             {
                 irc.Disconnect();
