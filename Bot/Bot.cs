@@ -327,7 +327,7 @@ namespace Bot
             else if (e.Data.Message.StartsWith(commandIdentifier + "uptime"))
             {
                 TimeSpan uptime = DateTime.Now - startTime;
-                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, uptime.Days + " days " + uptime.Hours + "h " + uptime.Minutes + "m");
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, uptime.Days + "d " + uptime.Hours + "h " + uptime.Minutes + "m");
             }
             else
             {

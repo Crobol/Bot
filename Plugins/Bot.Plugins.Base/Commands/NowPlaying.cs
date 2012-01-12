@@ -61,8 +61,6 @@ namespace Bot.Commands
         /// <summary>
         /// Fetches and parses the Now Playing information from http://last.fm/user/lastfmUsername
         /// </summary>
-        /// <param name="irc">The current irc connection</param>
-        /// <param name="destinationChannel">Channel which to respond to</param>
         /// <param name="lastfmUsername">Last.fm username to fetch from</param>
         protected string FetchNowPlayingInfo(string lastfmUsername)
         {
@@ -79,6 +77,19 @@ namespace Bot.Commands
                 {
                     string message = "np: " + subjectNode.InnerText.Trim();
                     message = WebUtility.HtmlDecode(message);
+
+                    string[] trackInfo = subjectNode.InnerText.Trim().Split('–');
+                    html = HtmlHelper.GetFromUrl("http://last.fm/music/" + trackInfo[0].Trim().Replace(' ', '+'));
+
+                    doc.LoadHtml(html);
+
+                    HtmlNode tagsNode = doc.DocumentNode.SelectSingleNode("//div [@class = 'tags']/p/a");
+
+                    if (tagsNode != null && !string.IsNullOrWhiteSpace(tagsNode.InnerText))
+                    {
+                        message += " [" + tagsNode.InnerText.Trim() + "]";
+                    }
+
                     return message;
                 }
                 else

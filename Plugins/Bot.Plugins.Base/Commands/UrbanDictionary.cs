@@ -3,47 +3,42 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using Bot.Core;
-using Bot.Core.Commands;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
+using Bot.Core;
+using Bot.Core.Commands;
 
-namespace Bot.Commands
+namespace Bot.Plugins.Base.Commands
 {
     [Export(typeof(Command))]
-    class Tyda : AsyncCommand
+    class UrbanDictionary : AsyncCommand
     {
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public Tyda([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        public UrbanDictionary([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
         {
             this.CommandCompleted += onAsyncCommandCompleted;
         }
 
         public override string Name()
         {
-            return "t";
-        }
-
-        public override string Help()
-        {
-            return "Makes a Tyda.se search and returns the first result. Parameters: <expression>";
+            return "ub";
         }
 
         protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            string url = "http://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
+            string url = "http://www.urbandictionary.com/define.php?term=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
             string html = HtmlHelper.GetFromUrl(url);
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            HtmlNode node = doc.DocumentNode.SelectSingleNode("//div [@class = 'tyda_content']/descendant::a [@id = 'tyda_transR6']");
-            
+            HtmlNode node = doc.DocumentNode.SelectSingleNode("//table [@id = 'entries']/descendant::td [starts-with(@id, 'entry_')]/div [@class = 'definition']");
+
             string message = "";
 
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
-                message = "Tyda.se: " + node.InnerText;
+                message = "UrbanDictionary: " + node.InnerText;
             else
                 message = "No results found";
 
