@@ -52,11 +52,11 @@
   <ItemGroup>
     <Compile Include="Bot.Designer.cs">
       <DependentUpon>Bot.edmx</DependentUpon>
-      <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
     </Compile>
     <Compile Include="Commands\AsyncCommand.cs" />
-    <Compile Include="Commands\AsyncCommandCompletedEventArgs.cs" />
+    <Compile Include="Commands\CommandCompletedEventArgs.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="HtmlHelper.cs" />
@@ -69,13 +69,13 @@
     <Compile Include="UserService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.Config" />
+  </ItemGroup>
+  <ItemGroup>
     <EntityDeploy Include="Bot.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>Bot.Designer.cs</LastGenOutput>
     </EntityDeploy>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.Config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

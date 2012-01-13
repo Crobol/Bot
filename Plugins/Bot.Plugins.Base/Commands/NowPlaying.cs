@@ -36,7 +36,7 @@ namespace Bot.Commands
             return "Fetches now playing information from last.fm. Parameters: [<username>]";
         }
 
-        protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string nick = "";
             string message = "";
@@ -53,7 +53,7 @@ namespace Bot.Commands
             if (!string.IsNullOrWhiteSpace(nick))
                 message = FetchNowPlayingInfo(nick);
 
-            AsyncCommandCompletedEventArgs completedArgs = new AsyncCommandCompletedEventArgs(e.Data.Channel, message);
+            CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Channel, message);
 
             return completedArgs;
         }

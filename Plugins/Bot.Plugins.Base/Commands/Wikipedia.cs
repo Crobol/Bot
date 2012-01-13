@@ -28,7 +28,7 @@ namespace Bot.Commands
             return "w";
         }
 
-        protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string subject = string.Join(" ", e.Data.MessageArray.Skip(1));
             subject = subject.Replace(" ", "_");

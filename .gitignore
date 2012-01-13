@@ -1,0 +1,9 @@
+*.com
+*.class
+*.exe
+*.o
+*.so
+*.suo
+*.csproj.user
+Bot/bin
+Bot/obj

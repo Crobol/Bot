@@ -16,6 +16,8 @@ using Bot.Core.Plugins;
 using Meebey.SmartIrc4net;
 using HtmlAgilityPack;
 using Nini.Config;
+using log4net;
+using log4net.Config;
 
 namespace Bot
 {
@@ -23,28 +25,23 @@ namespace Bot
     {
         #region Members
 
-        private IrcClient irc = null;
-        protected ServerDescriptor server = null;
+        private IrcClient irc;
+        private ILog log = LogManager.GetLogger(typeof(Bot));
+        private ServerDescriptor server;
 
-        UserService userService = null;
-        BotEntities db = new BotEntities();
+        private BotEntities db = new BotEntities();
+        private UserService userService = null;
 
-        [ImportMany]
-        private IEnumerable<IPlugin> Plugins { get; set; }
+        [ImportMany] private IEnumerable<IPlugin> Plugins { get; set; }
+        [ImportMany] private IEnumerable<Command> Commands { get; set; }
+        [ImportMany] private IEnumerable<Processor> Processors { get; set; }
+        private Dictionary<string, Command> commands = new Dictionary<string, Command>(); // Name <-> Command mapping
 
-        [ImportMany]
-        private IEnumerable<Command> Commands { get; set; }
-        private Dictionary<string, Command> commands = new Dictionary<string, Command>();
+        private IConfig config;
 
-        [ImportMany]
-        private IEnumerable<Processor> Processors { get; set; }
-
-        private IConfig config = null;
-
-        private bool silent = true;
         private string commandIdentifier = "!";
 
-        private static readonly DateTime startTime = DateTime.Now;
+        private static readonly DateTime startTime = DateTime.Now; // For uptime
         private static bool quit = false;
 
         #endregion
@@ -64,10 +61,14 @@ namespace Bot
 
         public Bot(ServerDescriptor server, IConfig config)
         {
+            BasicConfigurator.Configure();
+            log.Info("Starting bot instance...");
+
             this.server = server;
             this.config = config;
+
             userService = new UserService(db);
-            Console.WriteLine("Loading plugins...");
+
             LoadPlugins(config.GetString("plugin-folder", "Plugins"));
             MapCommands(config);
         }
@@ -79,16 +80,17 @@ namespace Bot
         }
 
         #endregion
-
+        
         #region Initialization
 
         private void LoadPlugins(string pluginFolder = "Plugins")
         {
+            log.Info("Loading plugins...");
             var catalog = new DirectoryCatalog(pluginFolder);
             var container = new CompositionContainer(catalog);
             container.ComposeExportedValue<Dictionary<string, Command>>("Commands", commands);
             container.ComposeExportedValue<IConfig>("Config", config);
-            container.ComposeExportedValue<AsyncCommand.AsyncCommandCompletedEventHandler>("AsyncCommandCompletedEventHandler", OnAsyncCommandComplete);
+            container.ComposeExportedValue<AsyncCommand.AsyncCommandCompletedEventHandler>("AsyncCommandCompletedEventHandler", OnCommandComplete);
             container.ComposeExportedValue<UserService>("UserService", userService);
             container.ComposeParts(this);
         }
@@ -112,7 +114,7 @@ namespace Bot
             // Settings
             irc.Encoding = System.Text.Encoding.UTF8;
             irc.SendDelay = config.GetInt("send-delay", 200);
-            irc.ActiveChannelSyncing = true;
+            irc.ActiveChannelSyncing = config.GetBoolean("use-active-channel-syncing", false);
             irc.UseSsl = server.UseSsl;
             IrcUser user = irc.GetIrcUser("wqz");
 
@@ -123,7 +125,7 @@ namespace Bot
             irc.OnRawMessage += new IrcEventHandler(OnRawMessage);
             irc.OnPart += new PartEventHandler(OnPart);
 
-            Console.WriteLine("Initializing plugins...");
+            log.Info("Initializing plugins...");
             foreach (var plugin in Plugins)
             {
                 plugin.Initialize(config);
@@ -133,12 +135,12 @@ namespace Bot
 
             try
             {
-                Console.WriteLine("Connecting to server...");
+                log.Info("Connecting to server " + irc.Address);
                 irc.Connect(server.Host, server.Port);
             }
             catch (ConnectionException e)
             {
-                System.Console.WriteLine("Error | Could not connect - Reason: " + e.Message);
+                log.Error("Could not connect to server " + irc.Address, e);
                 Exit();
             }
 
@@ -157,18 +159,18 @@ namespace Bot
 
                 irc.Disconnect();
             }
-            catch (ConnectionException)
+            catch (ConnectionException e)
             {
+                log.Error("Error", e);
                 Thread.CurrentThread.Abort();
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("Error | Message: " + e.Message);
-                System.Console.WriteLine("Exception: " + e.StackTrace);
+                log.Error("Error", e);
                 Thread.CurrentThread.Abort();
             }
         }
-
+        
         /// <summary>
         /// Connects to all servers according to ServerDescriptors in separate threads and suspends itself in a loop waiting for console input
         /// </summary>
@@ -184,7 +186,6 @@ namespace Bot
         {
             Thread.CurrentThread.Name = "Main";
 
-            Console.WriteLine("Starting Bot...");
             foreach (ServerDescriptor server in servers)
             {
                 Bot instance = new Bot(server, globalSettings); // TODO: Save instances for disconnection
@@ -234,13 +235,13 @@ namespace Bot
 
             Bot.Run(servers, global);
         }
-
+        
         /// <summary>
         /// Register user invocable commands
         /// </summary>
         private void MapCommands(IConfig config)
         {
-            Console.WriteLine("Mapping Commands...");
+            log.Info("Mapping commands...");
 
             // Create name -> command mapping
             foreach (Command command in Commands)
@@ -253,7 +254,7 @@ namespace Bot
 
         #region Event handlers
 
-        public void OnAsyncCommandComplete(object sender, AsyncCommandCompletedEventArgs e)
+        public void OnCommandComplete(object sender, CommandCompletedEventArgs e)
         {
             if (e != null && !string.IsNullOrWhiteSpace(e.Destination) && !string.IsNullOrWhiteSpace(e.Message))
                 irc.SendMessage(e.SendType, e.Destination, e.Message);
@@ -277,24 +278,30 @@ namespace Bot
 
         public void OnQueryMessage(object sender, IrcEventArgs e)
         {
+            if (config.GetBoolean("show-channel-messages", true))
+                System.Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Nick + ": " + e.Data.Message);
+
             ProcessIrcEvent(e);
         }
 
         public void OnChannelMessage(object sender, IrcEventArgs e)
         {
+            if (config.GetBoolean("show-channel-messages", true))
+                System.Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Channel + ": " + e.Data.Message);
+
             ProcessIrcEvent(e);
         }
 
         public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e)
         {
-            System.Console.WriteLine("Error | Message: " + e.ErrorMessage);
+            log.Error(e.ErrorMessage);
             Exit();
         }
 
         public void OnRawMessage(object sender, IrcEventArgs e)
         {
-            if (!silent)
-                System.Console.WriteLine("Received | Message: " + e.Data.RawMessage);
+            if (config.GetBoolean("show-raw-messages", false))
+                System.Console.WriteLine(config.GetString("raw-message-indicator", "   ") + e.Data.RawMessage);
 
             if (e.Data.Irc.PassiveChannelSyncing && e.Data.Type == ReceiveType.Name)
             {

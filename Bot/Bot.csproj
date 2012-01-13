@@ -11,7 +11,8 @@
     <RootNamespace>Bot</RootNamespace>
     <AssemblyName>Bot</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -51,6 +52,9 @@
   <ItemGroup>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\Libraries\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\Libraries\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Meebey.SmartIrc4net">
       <HintPath>..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
@@ -105,16 +109,16 @@
     <Folder Include="Plugins\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bot.Core\Bot.Core.csproj">
-      <Project>{A7E37503-4444-490F-80FB-8A0E6A72FE71}</Project>
-      <Name>Bot.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App.Config">
       <SubType>Designer</SubType>
     </None>
     <None Include="Scripts\Demo.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bot.Core\Bot.Core.csproj">
+      <Project>{A7E37503-4444-490F-80FB-8A0E6A72FE71}</Project>
+      <Name>Bot.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

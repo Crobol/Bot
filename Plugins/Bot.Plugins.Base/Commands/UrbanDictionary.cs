@@ -25,7 +25,7 @@ namespace Bot.Plugins.Base.Commands
             return "ub";
         }
 
-        protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string url = "http://www.urbandictionary.com/define.php?term=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
             string html = HtmlHelper.GetFromUrl(url);
@@ -42,7 +42,7 @@ namespace Bot.Plugins.Base.Commands
             else
                 message = "No results found";
 
-            return new AsyncCommandCompletedEventArgs(e.Data.Channel, message);
+            return new CommandCompletedEventArgs(e.Data.Channel, message);
         } 
     }
 }

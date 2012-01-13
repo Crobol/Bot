@@ -30,7 +30,7 @@ namespace Bot.Commands
             return "Makes a Tyda.se search and returns the first result. Parameters: <expression>";
         }
 
-        protected override AsyncCommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string url = "http://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
             string html = HtmlHelper.GetFromUrl(url);
@@ -47,7 +47,7 @@ namespace Bot.Commands
             else
                 message = "No results found";
 
-            return new AsyncCommandCompletedEventArgs(e.Data.Channel, message);
+            return new CommandCompletedEventArgs(e.Data.Channel, message);
         } 
     }
 }

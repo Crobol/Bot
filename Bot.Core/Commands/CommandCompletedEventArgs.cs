@@ -7,13 +7,13 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Core.Commands
 {
-    public class AsyncCommandCompletedEventArgs : EventArgs
+    public class CommandCompletedEventArgs : EventArgs
     {
         public string Message { get; set; }
         public string Destination { get; set; }
         public SendType SendType { get; set; }
 
-        public AsyncCommandCompletedEventArgs(string destination, string message, SendType sendType = SendType.Message)
+        public CommandCompletedEventArgs(string destination, string message, SendType sendType = SendType.Message)
         {
             Message = message;
             Destination = destination;

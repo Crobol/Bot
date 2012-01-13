@@ -11,11 +11,11 @@ namespace Bot.Core.Commands
 {
     public abstract class AsyncCommand : Command
     {
-        protected delegate AsyncCommandCompletedEventArgs WorkerDelegate(IrcEventArgs e);
-        public delegate void AsyncCommandCompletedEventHandler(object sender, AsyncCommandCompletedEventArgs e);
+        protected delegate CommandCompletedEventArgs WorkerDelegate(IrcEventArgs e);
+        public delegate void AsyncCommandCompletedEventHandler(object sender, CommandCompletedEventArgs e);
         public event AsyncCommandCompletedEventHandler CommandCompleted;
 
-        protected abstract AsyncCommandCompletedEventArgs Worker(IrcEventArgs e);
+        protected abstract CommandCompletedEventArgs Worker(IrcEventArgs e);
 
         public override void Execute(IrcEventArgs e)
         {
@@ -31,12 +31,12 @@ namespace Bot.Core.Commands
             WorkerDelegate worker = (WorkerDelegate)((AsyncResult)ar).AsyncDelegate;
             AsyncOperation async = (AsyncOperation)ar.AsyncState;
 
-            AsyncCommandCompletedEventArgs completedArgs = worker.EndInvoke(ar);
+            CommandCompletedEventArgs completedArgs = worker.EndInvoke(ar);
 
-            async.PostOperationCompleted(delegate(object e) { OnCommandCompleted((AsyncCommandCompletedEventArgs)e); }, completedArgs);
+            async.PostOperationCompleted(delegate(object e) { OnCommandCompleted((CommandCompletedEventArgs)e); }, completedArgs);
         }
 
-        protected void OnCommandCompleted(AsyncCommandCompletedEventArgs e)
+        protected void OnCommandCompleted(CommandCompletedEventArgs e)
         {
             if (CommandCompleted != null)
                 CommandCompleted(this, e);
