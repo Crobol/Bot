@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DbLinq">
+      <HintPath>..\Libraries\DbLinq.dll</HintPath>
+    </Reference>
     <Reference Include="Meebey.SmartIrc4net">
       <HintPath>..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
@@ -40,7 +43,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
@@ -50,10 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bot.Designer.cs">
-      <DependentUpon>Bot.edmx</DependentUpon>
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
+    <Compile Include="BotDataContext.cs">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\AsyncCommand.cs" />
     <Compile Include="Commands\CommandCompletedEventArgs.cs" />
@@ -70,12 +71,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.Config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EntityDeploy Include="Bot.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>Bot.Designer.cs</LastGenOutput>
-    </EntityDeploy>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

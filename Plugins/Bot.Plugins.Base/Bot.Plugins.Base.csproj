@@ -34,6 +34,9 @@
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\..\Libraries\HtmlAgilityPack.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\Libraries\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Meebey.SmartIrc4net">
       <HintPath>..\..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
@@ -43,7 +46,6 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />

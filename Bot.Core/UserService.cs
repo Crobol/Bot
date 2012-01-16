@@ -8,11 +8,11 @@ namespace Bot.Core
 {
     public class UserService
     {
-        private BotEntities db = null;
+        private BotDataContext db = null;
         private IDictionary<string, User> authedUsers = new Dictionary<string, User>();
         SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
 
-        public UserService(BotEntities db)
+        public UserService(BotDataContext db)
         {
             this.db = db;
         }
@@ -22,7 +22,7 @@ namespace Bot.Core
             SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
             string hash = sha512hasher.ComputeHash(Encoding.Default.GetBytes(password)).ByteArrayToString();
 
-            var users = from x in db.Users where x.Username == username && x.Password == hash select x;
+            var users = from x in db.User where x.Username == username && x.Password == hash select x;
 
             if (users.Any())
             {
@@ -32,7 +32,7 @@ namespace Bot.Core
                 user.LastNick = nick;
                 user.LastIdent = ident;
 
-                db.SaveChanges();
+                db.SubmitChanges();
 
                 return true;
             }
@@ -63,13 +63,13 @@ namespace Bot.Core
             User user = new User();
             user.Username = username;
             user.Password = sha512hasher.ComputeHash(Encoding.Default.GetBytes(password)).ByteArrayToString();
-            user.UserLevel = (long)(userLevel > 10 ? 10 : userLevel);
+            user.UserLevel = (userLevel > 10 ? 10 : userLevel);
 
             if (GetUser(username, password) == null)
             {
-                db.Users.AddObject(user);
-                db.SaveChanges();
-                return (int)user.Id;
+                db.User.InsertOnSubmit(user);
+                db.SubmitChanges();
+                return (int)user.ID;
             }
             else
             {
@@ -79,19 +79,19 @@ namespace Bot.Core
 
         public User GetUser(int id)
         {
-            return db.Users.Where(x => x.Id == id).FirstOrDefault();
+            return db.User.Where(x => x.ID == id).FirstOrDefault();
         }
 
         public User GetUser(string username)
         {
-            return db.Users.Where(x => x.Username == username).FirstOrDefault();
+            return db.User.Where(x => x.Username == username).FirstOrDefault();
         }
 
         public User GetUser(string username, string password)
         {
             string hash = sha512hasher.ComputeHash(Encoding.Default.GetBytes(password)).ByteArrayToString();
             return (from user 
-                    in db.Users 
+                    in db.User 
                     where user.Username == username && user.Password == hash 
                     select user
                     ).FirstOrDefault();
@@ -102,9 +102,9 @@ namespace Bot.Core
             return authedUsers.Values.ToList();
         }
 
-        public System.Data.Objects.ObjectSet<User> GetUsers()
+        public DbLinq.Data.Linq.Table<User> GetUsers()
         {
-            return db.Users;
+            return db.User;
         }
     }
 }

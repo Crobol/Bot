@@ -12,12 +12,15 @@ using IronPython.Hosting;
 using Bot.Core;
 using Bot.Core.Plugins;
 using Bot.Core.Commands;
+using log4net;
 
 namespace Bot.Plugins.IronPython
 {
     [Export(typeof(IPlugin))]
     public class IronPython : IPlugin
     {
+        private ILog log = LogManager.GetLogger(typeof(IronPython));
+
         private ScriptEngine ipy = null;
         private Dictionary<string, Command> commands;
         private IConfig config = null;
@@ -36,12 +39,12 @@ namespace Bot.Plugins.IronPython
             this.config = config;
             commandIdentifier = config.GetString("command-identifier", "!");
 
-            Console.WriteLine("Creating Python runtime...");
+            log.Info("Creating Python runtime...");
             ipy = Python.CreateEngine();
 
             LoadScripts(config.GetString("script-folder", "Scripts"));
 
-            Console.WriteLine("Plugin Loaded | Type: IronPython");
+            log.Info("Plugin \"IronPython\" loaded");
         }
 
         public void OnQueryMessage(object sender, IrcEventArgs e) { }
@@ -57,7 +60,7 @@ namespace Bot.Plugins.IronPython
 
         void LoadScripts(string directory)
         {
-            Console.WriteLine("Loading Python scripts...");
+            log.Info("Loading Python scripts...");
 
             string[] files = Directory.GetFiles(directory, "*.py");
             foreach (string file in files)
@@ -74,7 +77,7 @@ namespace Bot.Plugins.IronPython
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Error | Failed to load Python-script \"" + file + "\" | " + e.Message);
+                    log.Error("Failed to load Python-script \"" + file + "\"", e);
                 }
 
                 if (scope == null)

@@ -22,7 +22,7 @@ namespace Bot.Plugins.Base.Commands
 
         public override string Name()
         {
-            return "ub";
+            return "ud";
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)

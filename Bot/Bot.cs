@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -29,7 +30,7 @@ namespace Bot
         private ILog log = LogManager.GetLogger(typeof(Bot));
         private ServerDescriptor server;
 
-        private BotEntities db = new BotEntities();
+        private BotDataContext db;
         private UserService userService = null;
 
         [ImportMany] private IEnumerable<IPlugin> Plugins { get; set; }
@@ -67,6 +68,7 @@ namespace Bot
             this.server = server;
             this.config = config;
 
+            db = new BotDataContext(new SQLiteConnection("DbLinqProvider=Sqlite;DbLinqConnectionType=System.Data.Sqlite.SqliteConnection, System.Data.Sqlite;Data Source=Bot.db;"));
             userService = new UserService(db);
 
             LoadPlugins(config.GetString("plugin-folder", "Plugins"));
