@@ -58,6 +58,11 @@ namespace Bot.Core
                 return null;
         }
 
+        public IList<User> GetAuthenticatedUsers()
+        {
+            return authedUsers.Values.ToList();
+        }
+
         public int CreateUser(string username, string password, int userLevel = 1)
         {
             User user = new User();
@@ -97,14 +102,52 @@ namespace Bot.Core
                     ).FirstOrDefault();
         }
 
-        public IList<User> GetAuthenticatedUsers()
-        {
-            return authedUsers.Values.ToList();
-        }
-
         public DbLinq.Data.Linq.Table<User> GetUsers()
         {
             return db.User;
+        }
+
+        /// <summary>
+        /// Get user setting
+        /// </summary>
+        /// <param name="userId">User who owns setting</param>
+        /// <param name="name">Name of the setting</param>
+        /// <returns></returns>
+        public string GetUserSetting(int? userId, string name)
+        {
+            if (userId == null)
+                userId = -1;
+
+            return (from userSetting
+                    in db.UserSetting
+                    where userSetting.UserID == userId && userSetting.Name == name
+                    select userSetting.Value).FirstOrDefault();
+        }
+
+        public void SetUserSetting(int? userId, string name, string value)
+        {
+            if (userId == null)
+                userId = -1;
+
+            UserSetting setting = (from userSetting
+                                   in db.UserSetting
+                                   where userSetting.UserID == userId && userSetting.Name == name
+                                   select userSetting).FirstOrDefault();
+
+            if (setting != null)
+            {
+                setting.Value = value;
+            }
+            else
+            {
+                setting = new UserSetting();
+                setting.UserID = userId;
+                setting.Name = name;
+                setting.Value = value;
+                db.UserSetting.InsertOnSubmit(setting);
+            }
+
+            db.SubmitChanges();
         }
     }
 }

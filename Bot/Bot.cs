@@ -68,7 +68,7 @@ namespace Bot
             this.server = server;
             this.config = config;
 
-            db = new BotDataContext(new SQLiteConnection("DbLinqProvider=Sqlite;DbLinqConnectionType=System.Data.Sqlite.SqliteConnection, System.Data.Sqlite;Data Source=Bot.db;"));
+            db = new BotDataContext(new SQLiteConnection("DbLinqProvider=Sqlite;Data Source=Bot.db;"));
             userService = new UserService(db);
 
             LoadPlugins(config.GetString("plugin-folder", "Plugins"));
@@ -330,7 +330,7 @@ namespace Bot
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error | Message: " + ex.Message);
+                    log.Warn("Exception", ex);
                 }
             }
             else if (e.Data.Message.StartsWith(commandIdentifier + "uptime"))

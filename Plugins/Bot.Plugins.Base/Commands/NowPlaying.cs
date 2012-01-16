@@ -11,18 +11,23 @@ using Bot.Core.Commands;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
 using Nini.Config;
+using log4net;
 
 namespace Bot.Commands
 {
     [Export(typeof(Command))]
     class NowPlaying : AsyncCommand
     {
-        IConfig config = null;
+        private ILog log = LogManager.GetLogger(typeof(NowPlaying));
+
+        IConfig config;
+        UserService userService;
 
         [ImportingConstructor]
-        public NowPlaying([Import("Config")] IConfig config, [Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        public NowPlaying([Import("Config")] IConfig config, [Import("UserService")] UserService userService, [Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
         {
             this.config = config;
+            this.userService = userService;
             this.CommandCompleted += onAsyncCommandCompleted;
         }
 
@@ -33,11 +38,13 @@ namespace Bot.Commands
 
         public override string Help()
         {
-            return "Fetches now playing information from last.fm. Parameters: [<username>]";
+            return "Fetches now playing information from last.fm. You can save your last.fm username by setting \"" + Name() + ".<nickname>\" or when logged in \"" + Name() + ".username\". Parameters: [<username>]";
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
+            User user = userService.GetAuthenticatedUser(e.Data.From);
+
             string nick = "";
             string message = "";
 
@@ -47,7 +54,10 @@ namespace Bot.Commands
             }
             else
             {
-                nick = config.GetString(e.Data.Nick, e.Data.Nick);
+                if (user != null)
+                    nick = userService.GetUserSetting(user.ID, Name() + ".username");
+                else
+                    nick = userService.GetUserSetting(null, Name() + "." + e.Data.Nick);
             }
 
             if (!string.IsNullOrWhiteSpace(nick))
@@ -93,11 +103,11 @@ namespace Bot.Commands
                     return message;
                 }
                 else
-                    Console.WriteLine("Error | Could not find Now Playing information in last.fm page");
+                    log.Warn("Could not find Now Playing information in last.fm page");
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error | Could not get Now Playing information | Exception: " + e.Message);
+                log.Warn("Could not get Now Playing information", e);
             }
 
             return "";
