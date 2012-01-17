@@ -51,25 +51,21 @@ namespace Bot
 
         public Bot()
         {
-            userService = new UserService(db);
-        }
-
-        public Bot(ServerDescriptor server)
-        {
-            this.server = server;
-            userService = new UserService(db);
-        }
-
-        public Bot(ServerDescriptor server, IConfig config)
-        {
             BasicConfigurator.Configure();
             log.Info("Starting bot instance...");
 
-            this.server = server;
-            this.config = config;
-
             db = new BotDataContext(new SQLiteConnection("DbLinqProvider=Sqlite;Data Source=Bot.db;"));
             userService = new UserService(db);
+        }
+
+        public Bot(ServerDescriptor server) : this()
+        {
+            this.server = server;
+        }
+
+        public Bot(ServerDescriptor server, IConfig config) : this(server)
+        {
+            this.config = config;
 
             LoadPlugins(config.GetString("plugin-folder", "Plugins"));
             MapCommands(config);
@@ -148,9 +144,9 @@ namespace Bot
 
             try
             {
-                irc.Login(config.GetString("nick", "slave"), 
-                    config.GetString("realname", "slave"), 
-                    0, 
+                irc.Login(config.GetString("nick", "slave"),
+                    config.GetString("realname", "slave"),
+                    0,
                     config.GetString("username", "slave")
                 );
 
@@ -160,6 +156,12 @@ namespace Bot
                 irc.Listen();
 
                 irc.Disconnect();
+            }
+            catch (ThreadAbortException e)
+            {
+                log.Info("Aborting thread", e);
+                irc.Disconnect();
+                Thread.CurrentThread.Abort();
             }
             catch (ConnectionException e)
             {
@@ -190,16 +192,15 @@ namespace Bot
 
             foreach (ServerDescriptor server in servers)
             {
-                Bot instance = new Bot(server, globalSettings); // TODO: Save instances for disconnection
-                ThreadStart threadStart = delegate { instance.Connect(); };
+                ThreadStart threadStart = delegate { Bot instance = new Bot(server, globalSettings); instance.Connect(); };
                 Thread thread = new Thread(threadStart);
                 thread.Start();
             }
-
+            
             do
             {
                 string input = Console.ReadLine();
-                if (input == "die")
+                if (input == "die" || input == "quit" || input == "exit")
                     quit = true;
             } while (!quit);
 
