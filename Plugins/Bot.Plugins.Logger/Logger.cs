@@ -12,11 +12,11 @@ using Nini.Config;
 namespace Bot.Plugins.Logger
 {
     [Export(typeof(IPlugin))]
-    public class Logger : IPlugin
+    public class Logger : IPlugin, IDisposable
     {
         private FileStream rawLog;
 
-        ~Logger()
+        public void Dispose()
         {
             rawLog.Flush();
             rawLog.Close();

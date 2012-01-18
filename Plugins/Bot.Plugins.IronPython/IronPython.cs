@@ -36,6 +36,8 @@ namespace Bot.Plugins.IronPython
 
         public void Initialize(IConfig config)
         {
+            log.Info("Initializing \"IronPython\" plugin...");
+
             this.config = config;
             commandIdentifier = config.GetString("command-identifier", "!");
 
