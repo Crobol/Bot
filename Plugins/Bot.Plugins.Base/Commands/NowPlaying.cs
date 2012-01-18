@@ -24,11 +24,11 @@ namespace Bot.Commands
         UserService userService;
 
         [ImportingConstructor]
-        public NowPlaying([Import("Config")] IConfig config, [Import("UserService")] UserService userService, [Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        public NowPlaying([Import("Config")] IConfig config, [Import("UserService")] UserService userService, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
         {
             this.config = config;
             this.userService = userService;
-            this.CommandCompleted += onAsyncCommandCompleted;
+            this.CommandCompleted += onCommandCompleted;
         }
 
         public override string Name()

@@ -12,8 +12,6 @@ namespace Bot.Core.Commands
     public abstract class AsyncCommand : Command
     {
         protected delegate CommandCompletedEventArgs WorkerDelegate(IrcEventArgs e);
-        public delegate void AsyncCommandCompletedEventHandler(object sender, CommandCompletedEventArgs e);
-        public event AsyncCommandCompletedEventHandler CommandCompleted;
 
         protected abstract CommandCompletedEventArgs Worker(IrcEventArgs e);
 
@@ -34,12 +32,6 @@ namespace Bot.Core.Commands
             CommandCompletedEventArgs completedArgs = worker.EndInvoke(ar);
 
             async.PostOperationCompleted(delegate(object e) { OnCommandCompleted((CommandCompletedEventArgs)e); }, completedArgs);
-        }
-
-        protected void OnCommandCompleted(CommandCompletedEventArgs e)
-        {
-            if (CommandCompleted != null)
-                CommandCompleted(this, e);
         }
     }
 }

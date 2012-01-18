@@ -15,9 +15,9 @@ namespace Bot.Plugins.Base.Commands
     {
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public UrbanDictionary([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        public UrbanDictionary([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
         {
-            this.CommandCompleted += onAsyncCommandCompleted;
+            this.CommandCompleted += onCommandCompleted;
         }
 
         public override string Name()

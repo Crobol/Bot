@@ -6,8 +6,12 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Core.Commands
 {
+    public delegate void CommandCompletedEventHandler(object sender, CommandCompletedEventArgs e);
+
     public abstract class Command : ICommand
     {
+        public event CommandCompletedEventHandler CommandCompleted;
+
         public abstract string Name();
 
         public virtual string Help()
@@ -16,5 +20,11 @@ namespace Bot.Core.Commands
         }
 
         public abstract void Execute(IrcEventArgs e);
+
+        protected void OnCommandCompleted(CommandCompletedEventArgs e)
+        {
+            if (CommandCompleted != null)
+                CommandCompleted(this, e);
+        }
     }
 }

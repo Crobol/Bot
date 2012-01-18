@@ -10,17 +10,20 @@ using Bot.Core;
 using Bot.Core.Commands;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
+using log4net;
 
 namespace Bot.Commands
 {
     [Export(typeof(Command))]
     class Wikipedia : AsyncCommand
     {
+        private ILog log = LogManager.GetLogger(typeof(Wikipedia));
+
         // TODO: Make command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public Wikipedia([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        public Wikipedia([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
         {
-            this.CommandCompleted += onAsyncCommandCompleted;
+            this.CommandCompleted += onCommandCompleted;
         }
 
         public override string Name()
@@ -75,7 +78,7 @@ namespace Bot.Commands
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error | " + e.Message);
+                log.Error("Exception", e);
             }
 
             return "";

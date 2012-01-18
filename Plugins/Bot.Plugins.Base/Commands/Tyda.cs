@@ -15,9 +15,9 @@ namespace Bot.Commands
     {
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public Tyda([Import("AsyncCommandCompletedEventHandler")] AsyncCommand.AsyncCommandCompletedEventHandler onAsyncCommandCompleted)
+        public Tyda([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
         {
-            this.CommandCompleted += onAsyncCommandCompleted;
+            this.CommandCompleted += onCommandCompleted;
         }
 
         public override string Name()

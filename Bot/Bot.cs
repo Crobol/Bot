@@ -88,7 +88,7 @@ namespace Bot
             var container = new CompositionContainer(catalog);
             container.ComposeExportedValue<Dictionary<string, Command>>("Commands", commands);
             container.ComposeExportedValue<IConfig>("Config", config);
-            container.ComposeExportedValue<AsyncCommand.AsyncCommandCompletedEventHandler>("AsyncCommandCompletedEventHandler", OnCommandComplete);
+            container.ComposeExportedValue<CommandCompletedEventHandler>("CommandCompletedEventHandler", OnCommandComplete);
             container.ComposeExportedValue<UserService>("UserService", userService);
             container.ComposeParts(this);
         }

@@ -9,27 +9,32 @@ using Bot.Core.Processors;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
 using Nini.Config;
+using log4net;
 
 namespace Bot.Processors
 {
     [Export(typeof(Processor))]
     class UrlTitles : AsyncProcessor
     {
+        private ILog log = LogManager.GetLogger(typeof(UrlTitles));
+
+        WebClient webClient = new WebClient();
         private List<Regex> urlPatterns = null;
         protected static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
 
-        public UrlTitles()
+        private UrlTitles()
         {
-
+            webClient.CachePolicy = new System.Net.Cache.HttpRequestCachePolicy(System.Net.Cache.HttpRequestCacheLevel.CacheIfAvailable);
+            webClient.Proxy = null;
         }
 
-        public UrlTitles(List<Regex> urlPatterns)
+        public UrlTitles(List<Regex> urlPatterns) : this()
         {
             this.urlPatterns = urlPatterns;
         }
 
         [ImportingConstructor]
-        public UrlTitles([Import("Config")] IConfig config)
+        public UrlTitles([Import("Config")] IConfig config) : this()
         {
             string[] patternStrings = config.GetString("title-whitelist").Split(',');
 
@@ -68,10 +73,6 @@ namespace Bot.Processors
         /// <param name="ircMessage">Message to parse</param>
         protected void ProcessTitles(IrcClient irc, string destinationChannel, string ircMessage, Regex urlMatcher)
         {
-            WebClient webClient = new WebClient();
-            webClient.CachePolicy = new System.Net.Cache.HttpRequestCachePolicy(System.Net.Cache.HttpRequestCacheLevel.CacheIfAvailable);
-            webClient.Proxy = null;
-
             MatchCollection matches = urlMatcher.Matches(ircMessage);
             foreach (Match match in matches)
             {
@@ -85,7 +86,7 @@ namespace Bot.Processors
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Error | " + e.Message);
+                    log.Error("Error downloading HTML", e);
                     return;
                 }
 
@@ -106,6 +107,8 @@ namespace Bot.Processors
 
                     message = "Title: " + title;
                 }
+                else
+                    log.Warn("Could not find title in HTML-document");
 
                 if (message.Length > 0)
                     irc.SendMessage(SendType.Message, destinationChannel, message);
