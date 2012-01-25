@@ -264,8 +264,13 @@ namespace Bot
 
         public void OnCommandComplete(object sender, CommandCompletedEventArgs e)
         {
-            if (e != null && !string.IsNullOrWhiteSpace(e.Destination) && !string.IsNullOrWhiteSpace(e.Message))
-                irc.SendMessage(e.SendType, e.Destination, e.Message);
+            if (e != null
+                && !string.IsNullOrWhiteSpace(e.Destination)
+                && e.MessageLines.Count > 0)
+            {
+                foreach (string line in e.MessageLines.Where(x => !string.IsNullOrWhiteSpace(x)))
+                    irc.SendMessage(e.SendType, e.Destination, line);
+            }
         }
 
         public void OnPart(object sender, PartEventArgs e)

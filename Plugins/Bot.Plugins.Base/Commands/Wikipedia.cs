@@ -33,7 +33,7 @@ namespace Bot.Commands
 
         public override string[] Aliases
         {
-            get { return new string[] { "w", "wiki" }; }
+            get { return new string[] { "wikipedia" }; }
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
@@ -41,16 +41,22 @@ namespace Bot.Commands
             string subject = string.Join(" ", e.Data.MessageArray.Skip(1));
             subject = subject.Replace(" ", "_");
             subject = subject.UppercaseFirst();
+
+            IList<string> lines = new List<string>();
+
             if (!string.IsNullOrWhiteSpace(subject))
             {
                 string url = "https://en.wikipedia.org/wiki/" + subject;
                 string message = FetchWikipedia(url);
 
-                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
-                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, url);
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    lines.Add(message.FormatToIrc());
+                    lines.Add(url);
+                }
             }
 
-            return null;
+            return new CommandCompletedEventArgs(e.Data.Channel, lines);
         }
 
         /// <summary>
@@ -74,18 +80,18 @@ namespace Bot.Commands
                 {
                     string message = "Wiki: " + node.InnerText;
                     message = WebUtility.HtmlDecode(message).Trim();
-                    if (message.Length > 500)
-                    {
-                        message = message.Substring(0, 500);
-                    }
+
                     return message;
+                }
+                else
+                {
+                    throw new Exception("No content node");
                 }
             }
             catch (Exception e)
             {
-                log.Error("Exception", e);
+                log.Error("Exception trying to fetch Wikipedia article", e);
             }
-
             return "";
         }
     }

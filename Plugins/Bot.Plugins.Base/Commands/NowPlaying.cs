@@ -72,9 +72,12 @@ namespace Bot.Commands
             }
 
             if (!string.IsNullOrWhiteSpace(nick))
+            {
+                log.Info("Fetching now playing information for user \"" + nick + "\"");
                 message = FetchNowPlayingInfo(nick);
+            }
 
-            CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Channel, message);
+            CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });
 
             return completedArgs;
         }
@@ -114,11 +117,11 @@ namespace Bot.Commands
                     return message;
                 }
                 else
-                    log.Warn("Could not find Now Playing information in last.fm page");
+                    log.Warn("Could not find Now Playing information in last.fm user page");
             }
             catch (Exception e)
             {
-                log.Warn("Could not get Now Playing information", e);
+                log.Warn("Could not get last.fm user page information", e);
             }
 
             return "";

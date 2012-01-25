@@ -40,14 +40,16 @@ namespace Bot.Plugins.Base.Commands
 
             HtmlNode node = doc.DocumentNode.SelectSingleNode("//table [@id = 'entries']/descendant::td [starts-with(@id, 'entry_')]/div [@class = 'definition']");
 
-            string message = "";
+            IList<string> lines = new List<string>();
 
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
-                message = "UrbanDictionary: " + node.InnerText;
+                lines.Add(("UrbanDictionary: " + node.InnerText).FormatToIrc());
             else
-                message = "No results found";
+                lines.Add("No results found");
 
-            return new CommandCompletedEventArgs(e.Data.Channel, message);
+            lines.Add(url);
+
+            return new CommandCompletedEventArgs(e.Data.Channel, lines);
         } 
     }
 }

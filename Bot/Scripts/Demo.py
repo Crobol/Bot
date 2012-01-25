@@ -1,5 +1,5 @@
 #
-# Two simple commands in IronPython
+# Three simple commands in IronPython
 #
 
 import sys

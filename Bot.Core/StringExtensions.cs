@@ -29,5 +29,16 @@ namespace Bot.Core
 
             return output.ToString();
         }
+
+        public static string FormatToIrc(this string s)
+        {
+            if (s.Length > 400)
+            {
+                int lastIndex = s.Substring(0, 400).LastIndexOf(' ');
+                return s.Substring(0, lastIndex) + " [...]";
+            }
+            else
+                return s;
+        }
     }
 }

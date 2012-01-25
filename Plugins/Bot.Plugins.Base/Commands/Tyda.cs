@@ -46,16 +46,24 @@ namespace Bot.Commands
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            HtmlNode node = doc.DocumentNode.SelectSingleNode("//div [@class = 'tyda_content']/descendant::a [@id = 'tyda_transR6']");
-            
-            string message = "";
+            HtmlNodeCollection foundNodes = doc.DocumentNode.SelectNodes("//div [@class = 'tyda_content']/descendant::table [@class = 'tyda_res_body']/descendant::table [starts-with(@class, 'tyda_res_body_trans')]/descendant::a [starts-with(@id, 'tyda_trans')]");
 
-            if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
-                message = "Tyda.se: " + node.InnerText;
-            else
-                message = "No results found";
-
-            return new CommandCompletedEventArgs(e.Data.Channel, message);
-        } 
+            StringBuilder sb = new StringBuilder();
+            if (foundNodes.Count > 0)
+            {
+                sb.Append("Translate: ");
+                IEnumerable<HtmlNode> nodes = foundNodes.Take(4);
+                foreach (HtmlNode node in nodes)
+                {
+                    if (!string.IsNullOrWhiteSpace(node.InnerText))
+                    {
+                        sb.Append(node.InnerText);
+                        if (node != nodes.Last())
+                            sb.Append(", ");
+                    }
+                }
+            }
+            return new CommandCompletedEventArgs(e.Data.Channel, new List<string> { sb.ToString() });
+        }
     }
 }
