@@ -10,7 +10,7 @@ using Bot.Core.Commands;
 
 namespace Bot.Plugins.Base.Commands
 {
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class UrbanDictionary : AsyncCommand
     {
         // TODO: Move command completed from AsyncCommand to Command to avoid this
@@ -20,9 +20,14 @@ namespace Bot.Plugins.Base.Commands
             this.CommandCompleted += onCommandCompleted;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "ud";
+            get { return "Urban Dictionary"; }
+        }
+
+        public override string[]  Aliases
+        {
+	        get { return new string[] { "ud", "urban-dictionary" }; }
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)

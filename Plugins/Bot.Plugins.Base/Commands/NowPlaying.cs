@@ -15,7 +15,7 @@ using log4net;
 
 namespace Bot.Commands
 {
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class NowPlaying : AsyncCommand
     {
         private ILog log = LogManager.GetLogger(typeof(NowPlaying));
@@ -31,14 +31,19 @@ namespace Bot.Commands
             this.CommandCompleted += onCommandCompleted;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "np";
+            get { return "Now Playing"; }
         }
 
-        public override string Help()
+        public override string[] Aliases
         {
-            return "Fetches now playing information from last.fm. You can save your last.fm username by setting \"" + Name() + ".<nickname>\" or when logged in \"" + Name() + ".username\". Parameters: [<username>]";
+            get { return new string[] { "np, now-playing" }; }
+        }
+
+        public override string Help
+        {
+            get { return "Fetches now playing information from last.fm. You can save your last.fm username by setting \"" + Name + ".<nickname>\" or when logged in \"" + Name + ".username\". Parameters: [<username>]"; }
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
@@ -56,11 +61,11 @@ namespace Bot.Commands
             {
                 if (user != null)
                 {
-                    nick = userService.GetUserSetting(user.ID, Name() + ".username");
+                    nick = userService.GetUserSetting(user.ID, Name + ".username");
                 }
                 else
                 {
-                    nick = userService.GetUserSetting(null, Name() + "." + e.Data.Nick);
+                    nick = userService.GetUserSetting(null, Name + "." + e.Data.Nick);
                     if (string.IsNullOrWhiteSpace(nick))
                         nick = e.Data.Nick;
                 }

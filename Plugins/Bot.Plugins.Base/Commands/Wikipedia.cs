@@ -14,7 +14,7 @@ using log4net;
 
 namespace Bot.Commands
 {
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class Wikipedia : AsyncCommand
     {
         private ILog log = LogManager.GetLogger(typeof(Wikipedia));
@@ -26,9 +26,14 @@ namespace Bot.Commands
             this.CommandCompleted += onCommandCompleted;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "w";
+            get { return "Wikipedia"; }
+        }
+
+        public override string[] Aliases
+        {
+            get { return new string[] { "w", "wiki" }; }
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)

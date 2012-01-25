@@ -6,10 +6,11 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Core.Commands
 {
-    interface ICommand
+    public interface ICommand
     {
-        string Name();
-        string Help();
+        string Name { get; }
+        string[] Aliases { get; }
+        string Help { get; }
         void Execute(IrcEventArgs e);
     }
 }

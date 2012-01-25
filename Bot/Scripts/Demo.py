@@ -15,10 +15,10 @@ class PythonVersion(Command):
 	def Execute(self, e):
 		e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "IronPython version: " + sys.version)
 
-	def Name(self):
+	def get_Name(self):
 		return "pv"
 
-	def Help(self):
+	def get_Help(self):
 		return "Displays the current IronPython version"
 
 
@@ -27,7 +27,7 @@ class Sing(Command):
 	def Execute(self, e):
 		e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "Trodilididoo~~")
 
-	def Name(self):
+	def get_Name(self):
 		return "sing"
 
 
@@ -40,5 +40,5 @@ class PythonEval(Command):
 		else:
 			e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command")
 
-	def Name(self):
+	def get_Name(self):
 		return "p"

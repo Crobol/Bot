@@ -34,9 +34,9 @@ namespace Bot
         private UserService userService = null;
 
         [ImportMany] private IEnumerable<IPlugin> Plugins { get; set; }
-        [ImportMany] private IEnumerable<Command> Commands { get; set; }
+        [ImportMany] private IEnumerable<ICommand> Commands { get; set; }
         [ImportMany] private IEnumerable<Processor> Processors { get; set; }
-        private Dictionary<string, Command> commands = new Dictionary<string, Command>(); // Name <-> Command mapping
+        private Dictionary<string, ICommand> commands = new Dictionary<string, ICommand>(); // Name <-> Command mapping
 
         private IConfig config;
 
@@ -86,7 +86,7 @@ namespace Bot
             log.Info("Loading plugins...");
             var catalog = new DirectoryCatalog(pluginFolder);
             var container = new CompositionContainer(catalog);
-            container.ComposeExportedValue<Dictionary<string, Command>>("Commands", commands);
+            container.ComposeExportedValue<Dictionary<string, ICommand>>("Commands", commands);
             container.ComposeExportedValue<IConfig>("Config", config);
             container.ComposeExportedValue<CommandCompletedEventHandler>("CommandCompletedEventHandler", OnCommandComplete);
             container.ComposeExportedValue<UserService>("UserService", userService);
@@ -247,9 +247,14 @@ namespace Bot
             log.Info("Mapping commands...");
 
             // Create name -> command mapping
-            foreach (Command command in Commands)
+            foreach (ICommand command in Commands)
             {
-                commands[commandIdentifier + command.Name()] = command;
+                //commands[commandIdentifier + command.Name] = command;
+                if (command.Aliases != null)
+                {
+                    foreach (string alias in command.Aliases)
+                        commands[commandIdentifier + alias] = command;
+                }
             }
         }
 

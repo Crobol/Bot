@@ -10,27 +10,32 @@ using Nini.Config;
 
 namespace Bot.Commands
 {
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class Set : Command
     {
         UserService userService;
-        IDictionary<string, Command> commands;
+        IDictionary<string, ICommand> commands;
 
         [ImportingConstructor]
-        public Set([Import("UserService")] UserService userService, [Import("Commands")] Dictionary<string, Command> commands)
+        public Set([Import("UserService")] UserService userService, [Import("Commands")] Dictionary<string, ICommand> commands)
         {
             this.userService = userService;
             this.commands = commands;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "set";
+            get { return "Set"; }
         }
 
-        public override string Help()
+        public override string[] Aliases
         {
-            return "Sets config value to <value>. Parameters: <valuename> <value>";
+            get { return new string[] { "set" }; }
+        }
+
+        public override string Help
+        {
+            get { return "Sets config value to <value>. Parameters: <valuename> <value>"; }
         }
 
         public override void Execute(IrcEventArgs e)

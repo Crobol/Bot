@@ -9,12 +9,12 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class Say : Command
     {
-        public override string Name()
+        public override string Name
         {
-            return "say";
+            get { return "say"; }
         }
 
         public override void Execute(IrcEventArgs e)
@@ -24,7 +24,7 @@ namespace Bot.Commands
         } 
     }
 
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class Join : Command
     {
         UserService userService;
@@ -35,9 +35,14 @@ namespace Bot.Commands
             this.userService = userService;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "join";
+            get { return "Join"; }
+        }
+
+        public override string[] Aliases
+        {
+            get { return new string[] { "join" }; }
         }
 
         public override void Execute(IrcEventArgs e)
@@ -52,7 +57,7 @@ namespace Bot.Commands
         }
     }
 
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class Part : Command
     {
         UserService userService;
@@ -63,9 +68,14 @@ namespace Bot.Commands
             this.userService = userService;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "part";
+            get { return "Part"; }
+        }
+
+        public override string[] Aliases
+        {
+            get { return new string[] { "part" }; }
         }
 
         public override void Execute(IrcEventArgs e)

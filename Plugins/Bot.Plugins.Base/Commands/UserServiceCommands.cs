@@ -9,7 +9,7 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class AddUser : Command
     {
         UserService userService;
@@ -20,14 +20,19 @@ namespace Bot.Commands
             this.userService = userService;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "add-user";
+            get { return "Add User"; }
         }
 
-        public override string Help()
+        public override string[] Aliases
         {
-            return "Adds user to database. Parameters: <username> <password> [<userlevel> = 1]";
+            get { return new string[] { "au", "add-user" }; }
+        }
+
+        public override string Help
+        {
+            get { return "Adds user to database. Parameters: <username> <password> [<userlevel> = 1]"; }
         }
 
         public override void Execute(IrcEventArgs e)
@@ -63,7 +68,7 @@ namespace Bot.Commands
         }
     }
 
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class AuthenticateUser : Command
     {
         UserService userService;
@@ -74,14 +79,19 @@ namespace Bot.Commands
             this.userService = userService;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "auth";
+            get { return "Authenticate"; }
         }
 
-        public override string Help()
+        public override string[] Aliases
         {
-            return "Authenticates user until user leaves all channels where the bot is present. Parameters: <username> <password>";
+            get { return new string[] { "auth", "authenticate", "login" }; }
+        }
+
+        public override string Help
+        {
+            get { return "Authenticates user until user leaves all channels where the bot is present. Parameters: <username> <password>"; }
         }
 
         public override void Execute(IrcEventArgs e)
@@ -103,7 +113,7 @@ namespace Bot.Commands
         }
     }
 
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class ListAuthenticatedUsers : Command
     {
         UserService userService;
@@ -114,14 +124,19 @@ namespace Bot.Commands
             this.userService = userService;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "list-authed-users";
+            get { return "List Authenticated Users"; }
         }
 
-        public override string Help()
+        public override string[] Aliases
         {
-            return "Lists all authenticated users";
+            get { return new string[] { "lau", "list-authed-users", "list-authenticated-users" }; }
+        }
+
+        public override string Help
+        {
+            get { return "Lists all authenticated users"; }
         }
 
         public override void Execute(IrcEventArgs e)

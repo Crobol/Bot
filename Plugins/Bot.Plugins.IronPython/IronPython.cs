@@ -22,13 +22,13 @@ namespace Bot.Plugins.IronPython
         private ILog log = LogManager.GetLogger(typeof(IronPython));
 
         private ScriptEngine ipy = null;
-        private Dictionary<string, Command> commands;
+        private Dictionary<string, ICommand> commands;
         private IConfig config = null;
         private UserService userService = null;
         string commandIdentifier = "!"; // TODO: Don't hard code this
 
         [ImportingConstructor]
-        public IronPython([Import("Commands")] Dictionary<string, Command> commands, [Import("UserService")] UserService userService)
+        public IronPython([Import("Commands")] Dictionary<string, ICommand> commands, [Import("UserService")] UserService userService)
         {
             this.commands = commands;
             this.userService = userService;

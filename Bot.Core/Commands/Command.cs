@@ -12,12 +12,10 @@ namespace Bot.Core.Commands
     {
         public event CommandCompletedEventHandler CommandCompleted;
 
-        public abstract string Name();
+        public abstract string Name { get; }
+        public virtual string[] Aliases { get { return null; } }
 
-        public virtual string Help()
-        {
-            return "No help message available for this command";
-        }
+        public virtual string Help { get { return "No help message available for this command"; } }
 
         public abstract void Execute(IrcEventArgs e);
 

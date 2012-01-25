@@ -10,7 +10,7 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
-    [Export(typeof(Command))]
+    [Export(typeof(ICommand))]
     class Tyda : AsyncCommand
     {
         // TODO: Move command completed from AsyncCommand to Command to avoid this
@@ -20,14 +20,22 @@ namespace Bot.Commands
             this.CommandCompleted += onCommandCompleted;
         }
 
-        public override string Name()
+        public override string Name
         {
-            return "t";
+            get { return "Translate"; }
         }
 
-        public override string Help()
+        public override string[] Aliases
         {
-            return "Makes a Tyda.se search and returns the first result. Parameters: <expression>";
+            get
+            {
+                return new string[] { "t", "trans", "translate" };
+            }
+        }
+
+        public override string Help
+        {
+            get { return "Makes a Tyda.se search and returns the first result. Parameters: <expression>"; }
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
