@@ -325,15 +325,29 @@ namespace Bot
             }
         }
 
+        private void OnDisconnected(object sender, EventArgs e)
+        {
+            while (!quit)
+            {
+                Thread.Sleep(5000);
+                this.Connect();
+            }
+        }
+
         #endregion
 
         #region Utilities
 
-        public void ProcessIrcEvent(IrcEventArgs e)
+        private void ProcessIrcEvent(IrcEventArgs e)
         {
             User user = userService.GetAuthenticatedUser(e.Data.From);
 
-            if (e.Data.Message.StartsWith(commandIdentifier))
+            if (e.Data.Message.StartsWith(commandIdentifier + "uptime"))
+            {
+                TimeSpan uptime = DateTime.Now - startTime;
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, uptime.Days + "d " + uptime.Hours + "h " + uptime.Minutes + "m");
+            }
+            else if (e.Data.Message.StartsWith(commandIdentifier))
             {
                 string command = null;
                 if (commands.ContainsKey(e.Data.MessageArray[0]))
@@ -369,11 +383,6 @@ namespace Bot
                     }
                 }
             }
-            else if (e.Data.Message.StartsWith(commandIdentifier + "uptime"))
-            {
-                TimeSpan uptime = DateTime.Now - startTime;
-                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, uptime.Days + "d " + uptime.Hours + "h " + uptime.Minutes + "m");
-            }
             else
             {
                 foreach (Processor processor in Processors)
@@ -384,8 +393,7 @@ namespace Bot
 
             if (user != null && user.UserLevel == 10 && (e.Data.MessageArray[0] == "!quit" || e.Data.MessageArray[0] == "!die"))
             {
-                irc.Disconnect();
-                quit = true;
+                irc.RfcQuit();
             }
         }
 

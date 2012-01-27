@@ -47,10 +47,17 @@ namespace Bot.Processors
         {
             if (e.Data.Message.Contains("http"))
             {
-                if (urlPatterns != null && urlPatterns.Count > 0)
-                    ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, urlPatterns); 
+                if (e.Data.MessageArray[0].StartsWith(e.Data.Irc.Nickname + ":") || e.Data.MessageArray[0].StartsWith("!link-title")) // TODO: split to separate command?
+                {
+                    ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, genericUrlPattern);
+                }
                 else
-                    ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, genericUrlPattern); 
+                {
+                    if (urlPatterns != null && urlPatterns.Count > 0)
+                        ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, urlPatterns);
+                    else
+                        ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, genericUrlPattern);
+                }
             }
         }
 
@@ -94,7 +101,7 @@ namespace Bot.Processors
 
                 if (titleNode != null && !string.IsNullOrEmpty(titleNode.InnerText))
                 {
-                    string title = titleNode.InnerText.Replace("\n", "").Replace("\t", "").Replace("\r", "");
+                    string title = titleNode.InnerText;
                     title = WebUtility.HtmlDecode(title);
 
                     StringBuilder sb = new StringBuilder();

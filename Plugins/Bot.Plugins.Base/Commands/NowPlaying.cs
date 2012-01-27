@@ -20,8 +20,10 @@ namespace Bot.Commands
     {
         private ILog log = LogManager.GetLogger(typeof(NowPlaying));
 
-        IConfig config;
-        UserService userService;
+        private IConfig config;
+        private UserService userService;
+
+        private const string SystemName = "np";
 
         [ImportingConstructor]
         public NowPlaying([Import("Config")] IConfig config, [Import("UserService")] UserService userService, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
@@ -61,11 +63,11 @@ namespace Bot.Commands
             {
                 if (user != null)
                 {
-                    nick = userService.GetUserSetting(user.ID, Name + ".username");
+                    nick = userService.GetUserSetting(user.ID, SystemName + ".username");
                 }
                 else
                 {
-                    nick = userService.GetUserSetting(null, Name + "." + e.Data.Nick);
+                    nick = userService.GetUserSetting(null, SystemName + "." + e.Data.Nick);
                     if (string.IsNullOrWhiteSpace(nick))
                         nick = e.Data.Nick;
                 }
