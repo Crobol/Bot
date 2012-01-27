@@ -86,7 +86,7 @@ namespace Bot.Commands
 
         public override string[] Aliases
         {
-            get { return new string[] { "auth", "authenticate", "login" }; }
+            get { return new string[] { "authenticate", "login" }; }
         }
 
         public override string Help
@@ -131,7 +131,7 @@ namespace Bot.Commands
 
         public override string[] Aliases
         {
-            get { return new string[] { "lau", "list-authed-users", "list-authenticated-users" }; }
+            get { return new string[] { "lau", "list-authenticated-users" }; }
         }
 
         public override string Help

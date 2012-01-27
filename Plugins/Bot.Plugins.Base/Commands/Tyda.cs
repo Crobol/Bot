@@ -27,10 +27,7 @@ namespace Bot.Commands
 
         public override string[] Aliases
         {
-            get
-            {
-                return new string[] { "t", "trans", "translate" };
-            }
+            get { return new string[] { "t", "translate" }; }
         }
 
         public override string Help

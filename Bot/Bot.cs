@@ -333,15 +333,40 @@ namespace Bot
         {
             User user = userService.GetAuthenticatedUser(e.Data.From);
 
-            if (e.Data.Message.StartsWith(commandIdentifier) && commands.ContainsKey(e.Data.MessageArray[0]))
+            if (e.Data.Message.StartsWith(commandIdentifier))
             {
-                try
+                string command = null;
+                if (commands.ContainsKey(e.Data.MessageArray[0]))
+                    command = e.Data.MessageArray[0];
+                else
                 {
-                    commands[e.Data.MessageArray[0]].Execute(e);
+                    IEnumerable<string> matches = commands.Keys.Where(x => x.StartsWith(e.Data.MessageArray[0]));
+                    if (matches.Count() == 1)
+                    {
+                        command = matches.First();
+                    }
+                    else if (matches.Count() > 1)
+                    {
+                        string message = "Did you mean " +
+                            matches.Aggregate(
+                                (sentence, x) =>
+                                    (x == matches.Last() ? sentence + " or " + x : sentence + ", " + x)
+                            );
+
+                        e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+                    }
                 }
-                catch (Exception ex)
+
+                if (!string.IsNullOrWhiteSpace(command))
                 {
-                    log.Warn("Exception", ex);
+                    try
+                    {
+                        commands[command].Execute(e);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Warn("Could not execute command \"" + commands[command].Name + "\"", ex);
+                    }
                 }
             }
             else if (e.Data.Message.StartsWith(commandIdentifier + "uptime"))
