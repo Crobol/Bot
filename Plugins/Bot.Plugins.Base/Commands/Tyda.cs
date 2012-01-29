@@ -45,9 +45,10 @@ namespace Bot.Commands
 
             HtmlNodeCollection foundNodes = doc.DocumentNode.SelectNodes("//div [@class = 'tyda_content']/descendant::table [@class = 'tyda_res_body']/descendant::table [starts-with(@class, 'tyda_res_body_trans')]/descendant::a [starts-with(@id, 'tyda_trans')]");
 
-            StringBuilder sb = new StringBuilder();
-            if (foundNodes.Count > 0)
+            string message;
+            if (foundNodes != null && foundNodes.Count > 0)
             {
+				StringBuilder sb = new StringBuilder();
                 sb.Append("Translate: ");
                 IEnumerable<HtmlNode> nodes = foundNodes.Take(4);
                 foreach (HtmlNode node in nodes)
@@ -59,8 +60,12 @@ namespace Bot.Commands
                             sb.Append(", ");
                     }
                 }
+				messsage = sb.ToString();
             }
-            return new CommandCompletedEventArgs(e.Data.Channel, new List<string> { sb.ToString() });
+			else
+				message = "No results found";
+			
+            return new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });
         }
     }
 }
