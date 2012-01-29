@@ -211,9 +211,16 @@ namespace Bot
         /// Connects to all servers specified in the config file located at "configFilePath"
         /// </summary>
         /// <param name="configFilePath"></param>
-        public static void Run(string configFilePath)
+        public static void Run(string filePath)
         {
-            IConfigSource source = new IniConfigSource(configFilePath);
+			IConfigSource source = null;
+			
+			if (!File.Exists(filePath))
+			{
+				source = CreateDefaultConfig(filePath);
+			}
+			else
+				source = new IniConfigSource(filePath);
 
             IConfig global = source.Configs["global"];
 
@@ -396,6 +403,22 @@ namespace Bot
                 irc.RfcQuit();
             }
         }
+		
+		private static IConfigSource CreateDefaultConfig(string filePath)
+		{
+			File.Create(filePath);
+			IConfigSource source = new IniConfigSource(filePath);
+			IConfig global = source.AddConfig("global");
+			
+			global.Set("nick", "bot");
+			global.Set("script-folder", "Scripts");
+			global.Set("plugin-floder", "Plugins");
+			global.Set("title-whitelist", @"https?://(www.)?youtube\.com\S*, https?://open\.spotify\.com\S*");
+			
+			source.Save();
+			
+			return source;
+		}
 
         public static void Exit()
         {
