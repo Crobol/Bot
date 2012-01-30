@@ -37,6 +37,9 @@
     <Reference Include="log4net">
       <HintPath>..\..\Libraries\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="LoreSoft.MathExpressions">
+      <HintPath>..\..\Libraries\LoreSoft.MathExpressions.dll</HintPath>
+    </Reference>
     <Reference Include="Meebey.SmartIrc4net">
       <HintPath>..\..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
@@ -53,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Calc.cs" />
     <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\IRC.cs" />
     <Compile Include="Commands\NowPlaying.cs" />
