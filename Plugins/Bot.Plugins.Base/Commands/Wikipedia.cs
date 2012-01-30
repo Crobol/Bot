@@ -78,10 +78,7 @@ namespace Bot.Commands
 
                 if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
                 {
-                    string message = "Wiki: " + node.InnerText;
-                    message = WebUtility.HtmlDecode(message).Trim();
-
-                    return message;
+                    return "Wiki: " + WebUtility.HtmlDecode(node.InnerText).Trim();
                 }
                 else
                 {

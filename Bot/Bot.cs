@@ -262,7 +262,7 @@ namespace Bot
 
         #region Event handlers
 
-        public void OnCommandComplete(object sender, CommandCompletedEventArgs e)
+        private void OnCommandComplete(object sender, CommandCompletedEventArgs e)
         {
             if (e != null
                 && !string.IsNullOrWhiteSpace(e.Destination)
@@ -273,7 +273,7 @@ namespace Bot
             }
         }
 
-        public void OnPart(object sender, PartEventArgs e)
+        private void OnPart(object sender, PartEventArgs e)
         {
             if (e.Data.Irc.ActiveChannelSyncing)
             {
@@ -289,7 +289,7 @@ namespace Bot
             }
         }
 
-        public void OnQueryMessage(object sender, IrcEventArgs e)
+        private void OnQueryMessage(object sender, IrcEventArgs e)
         {
             if (config.GetBoolean("show-channel-messages", true))
                 System.Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Nick + ": " + e.Data.Message);
@@ -297,7 +297,7 @@ namespace Bot
             ProcessIrcEvent(e);
         }
 
-        public void OnChannelMessage(object sender, IrcEventArgs e)
+        private void OnChannelMessage(object sender, IrcEventArgs e)
         {
             if (config.GetBoolean("show-channel-messages", true))
                 System.Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Channel + ": " + e.Data.Message);
@@ -305,13 +305,13 @@ namespace Bot
             ProcessIrcEvent(e);
         }
 
-        public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e)
+        private void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e)
         {
             log.Error(e.ErrorMessage);
             Exit();
         }
 
-        public void OnRawMessage(object sender, IrcEventArgs e)
+        private void OnRawMessage(object sender, IrcEventArgs e)
         {
             if (config.GetBoolean("show-raw-messages", false))
                 System.Console.WriteLine(config.GetString("raw-message-indicator", "   ") + e.Data.RawMessage);

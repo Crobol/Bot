@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Net;
 using System.Text;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
@@ -43,13 +44,13 @@ namespace Bot.Plugins.Base.Commands
             IList<string> lines = new List<string>();
 
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
-                lines.Add(("UrbanDictionary: " + node.InnerText).FormatToIrc());
+                lines.Add(("UrbanDictionary: " + WebUtility.HtmlDecode(node.InnerText)).FormatToIrc());
             else
                 lines.Add("No results found");
 
             lines.Add(url);
 
             return new CommandCompletedEventArgs(e.Data.Channel, lines);
-        } 
+        }
     }
 }
