@@ -20,15 +20,13 @@ namespace Bot.Commands
     {
         private ILog log = LogManager.GetLogger(typeof(NowPlaying));
 
-        private IConfig config;
         private UserService userService;
 
         private const string SystemName = "np";
 
         [ImportingConstructor]
-        public NowPlaying([Import("Config")] IConfig config, [Import("UserService")] UserService userService, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public NowPlaying([Import("UserService")] UserService userService, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
         {
-            this.config = config;
             this.userService = userService;
             this.CommandCompleted += onCommandCompleted;
         }

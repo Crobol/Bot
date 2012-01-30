@@ -14,13 +14,11 @@ namespace Bot.Commands
     class Set : Command
     {
         UserService userService;
-        IDictionary<string, ICommand> commands;
-
+        
         [ImportingConstructor]
-        public Set([Import("UserService")] UserService userService, [Import("Commands")] Dictionary<string, ICommand> commands)
+        public Set([Import("UserService")] UserService userService)
         {
             this.userService = userService;
-            this.commands = commands;
         }
 
         public override string Name

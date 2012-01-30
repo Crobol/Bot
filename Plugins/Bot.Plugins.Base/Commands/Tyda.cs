@@ -60,7 +60,7 @@ namespace Bot.Commands
                             sb.Append(", ");
                     }
                 }
-				messsage = sb.ToString();
+				message = sb.ToString();
             }
 			else
 				message = "No results found";
