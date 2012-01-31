@@ -77,6 +77,8 @@ namespace Bot.Commands
             {
                 log.Info("Fetching now playing information for user \"" + nick + "\"");
                 message = FetchNowPlayingInfo(nick);
+                if (CloseCall())
+                    message += " -- " + e.Data.Nick;
             }
 
             CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });

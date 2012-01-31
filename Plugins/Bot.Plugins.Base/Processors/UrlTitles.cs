@@ -19,8 +19,8 @@ namespace Bot.Processors
         private ILog log = LogManager.GetLogger(typeof(UrlTitles));
 
         WebClient webClient = new WebClient();
-        private List<Regex> urlPatterns = null;
-        protected static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
+        private readonly List<Regex> urlPatterns = null;
+        protected readonly static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
 
         private UrlTitles()
         {
@@ -47,59 +47,69 @@ namespace Bot.Processors
         {
             if (e.Data.Message.Contains("http"))
             {
+                IList<string> titles;
                 if (e.Data.MessageArray[0].StartsWith(e.Data.Irc.Nickname + ":") || e.Data.MessageArray[0].StartsWith("!link-title")) // TODO: split to separate command?
                 {
-                    ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, genericUrlPattern);
+                    titles = GetTitles(e.Data.Message, genericUrlPattern);
                 }
                 else
                 {
                     if (urlPatterns != null && urlPatterns.Count > 0)
-                        ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, urlPatterns);
+                        titles = GetTitles(e.Data.Message, urlPatterns);
                     else
-                        ProcessTitles(e.Data.Irc, e.Data.Channel, e.Data.Message, genericUrlPattern);
+                        titles = GetTitles(e.Data.Message, genericUrlPattern);
+                }
+
+                foreach (string title in titles)
+                {
+                    string message = "Title: " + title;
+                    if (CloseCall())
+                        message += " -- " + e.Data.Nick;
+                    e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
                 }
             }
         }
 
         /// <summary>
-        /// Looks for URLs in ircMessage and prints out the inner text in the title element
+        /// Looks for URLs in message and prints out the inner text in the title element
         /// </summary>
-        protected void ProcessTitles(IrcClient irc, string destinationChannel, string ircMessage, List<Regex> whitelist)
+        protected IList<string> GetTitles(string message, List<Regex> whitelist)
         {
+            List<string> titles = new List<string>();
             foreach (Regex re in whitelist)
             {
-                ProcessTitles(irc, destinationChannel, ircMessage, re);
+                IList<string> matches = GetTitles(message, re);
+                if (matches != null)
+                    titles.AddRange(matches);
             }
+            return titles;
         }
 
         /// <summary>
         /// Looks for URLs in ircMessage and prints out the inner text in the title element
         /// </summary>
-        /// <param name="irc">The current irc connection</param>
-        /// <param name="destinationChannel">Channel which to respond to</param>
         /// <param name="ircMessage">Message to parse</param>
-        protected void ProcessTitles(IrcClient irc, string destinationChannel, string ircMessage, Regex urlMatcher)
+        protected IList<string> GetTitles(string message, Regex urlMatcher)
         {
-            MatchCollection matches = urlMatcher.Matches(ircMessage);
+            IList<string> titles = new List<string>();
+            MatchCollection matches = urlMatcher.Matches(message);
             foreach (Match match in matches)
             {
-                string message = "";
                 HtmlDocument doc = new HtmlDocument();
 
                 try
                 {
-                    string html = webClient.DownloadString(match.Value);//HtmlHelper.GetFromUrl(match.Value);
+                    string html = webClient.DownloadString(match.Value);
                     doc.LoadHtml(html);
                 }
                 catch (Exception e)
                 {
                     log.Error("Error downloading HTML", e);
-                    return;
                 }
 
                 HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("//title");
 
-                if (titleNode != null && !string.IsNullOrEmpty(titleNode.InnerText))
+                if (titleNode != null && !string.IsNullOrWhiteSpace(titleNode.InnerText))
                 {
                     string title = titleNode.InnerText;
                     title = WebUtility.HtmlDecode(title);
@@ -111,15 +121,12 @@ namespace Bot.Processors
                         sb.AppendFormat("{0} ", parts[i]);
 
                     title = sb.ToString().Trim();
-
-                    message = "Title: " + title;
+                    titles.Add(title);
                 }
                 else
                     log.Warn("Could not find title in HTML-document");
-
-                if (message.Length > 0)
-                    irc.SendMessage(SendType.Message, destinationChannel, message);
             }
+            return titles;
         }
     }
 }
