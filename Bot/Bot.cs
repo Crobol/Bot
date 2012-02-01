@@ -114,7 +114,6 @@ namespace Bot
             irc.SendDelay = config.GetInt("send-delay", 200);
             irc.ActiveChannelSyncing = config.GetBoolean("use-active-channel-syncing", false);
             irc.UseSsl = server.UseSsl;
-            IrcUser user = irc.GetIrcUser("wqz");
 
             // Bind event handlers
             irc.OnQueryMessage += new IrcEventHandler(OnQueryMessage);
@@ -402,7 +401,7 @@ namespace Bot
             {
                 irc.RfcQuit();
             }
-        }
+		}
 		
 		private static IConfigSource CreateDefaultConfig(string filePath)
 		{
