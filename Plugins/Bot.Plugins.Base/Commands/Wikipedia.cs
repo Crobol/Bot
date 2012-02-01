@@ -38,7 +38,7 @@ namespace Bot.Commands
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            string subject = string.Join(" ", e.Data.MessageArray.Skip(1));
+            string subject = string.Join(" ", e.Data.MessageArray.Skip(1)).Trim();
             subject = subject.Replace(" ", "_");
             subject = subject.UppercaseFirst();
 
@@ -55,6 +55,9 @@ namespace Bot.Commands
                     lines.Add(url);
                 }
             }
+
+            if (!lines.Any())
+                lines.Add("No article found");
 
             return new CommandCompletedEventArgs(e.Data.Channel, lines);
         }
