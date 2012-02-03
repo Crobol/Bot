@@ -27,10 +27,12 @@ namespace Bot.Plugins.Base.Commands
             get { return new string[] { "synctest" }; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             Thread.Sleep(3000);
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "Sync wait done");
+
+            return null;
         }
     }
 
@@ -52,7 +54,7 @@ namespace Bot.Plugins.Base.Commands
             get { return new string[] { "asynctest" }; }
         }
 
-        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             Thread.Sleep(3000);
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "Async wait done");

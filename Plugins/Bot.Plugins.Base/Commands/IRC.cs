@@ -17,10 +17,12 @@ namespace Bot.Commands
             get { return "say"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             string message = e.Data.Message.Split(new char[] {' '}, 2).LastOrDefault();
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+
+            return null;
         } 
     }
 
@@ -45,7 +47,7 @@ namespace Bot.Commands
             get { return new string[] { "join" }; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             if (userSystem.IsAuthenticated(e.Data.From))
             {
@@ -54,6 +56,8 @@ namespace Bot.Commands
             }
             else
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");
+
+            return null;
         }
     }
 
@@ -78,12 +82,14 @@ namespace Bot.Commands
             get { return new string[] { "part" }; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             if (userSystem.IsAuthenticated(e.Data.From))
                 e.Data.Irc.RfcPart(e.Data.Channel);
             else
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");
+
+            return null;
         }
     }
 }

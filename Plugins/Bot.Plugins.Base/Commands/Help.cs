@@ -37,7 +37,7 @@ namespace Bot.Plugins.Base.Commands
             get { return "Lists available commands or displays a help message for the command given as parameter. Parameters: [<command>]"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             string message = "";
 
@@ -61,6 +61,8 @@ namespace Bot.Plugins.Base.Commands
             }
 
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+
+            return null;
         }
     }
 }

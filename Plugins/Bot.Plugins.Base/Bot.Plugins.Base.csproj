@@ -43,6 +43,9 @@
     <Reference Include="Meebey.SmartIrc4net">
       <HintPath>..\..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.4.0.7\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Nini">
       <HintPath>..\..\Libraries\Nini.dll</HintPath>
     </Reference>
@@ -60,6 +63,7 @@
     <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\IRC.cs" />
     <Compile Include="Commands\NowPlaying.cs" />
+    <Compile Include="Commands\SpotifyLastNp.cs" />
     <Compile Include="Commands\SyncVsAsync.cs" />
     <Compile Include="Commands\UrbanDictionary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -68,12 +72,16 @@
     <Compile Include="Processors\UrlTitles.cs" />
     <Compile Include="Commands\UserServiceCommands.cs" />
     <Compile Include="Commands\Wikipedia.cs" />
+    <Compile Include="SpotifyJsonModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Bot.Core\Bot.Core.csproj">
       <Project>{A7E37503-4444-490F-80FB-8A0E6A72FE71}</Project>
       <Name>Bot.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

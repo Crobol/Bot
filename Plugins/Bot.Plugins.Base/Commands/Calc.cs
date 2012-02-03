@@ -34,9 +34,11 @@ namespace Bot.Plugins.Base.Commands
             get { return "Evaluates a mathematical expression. Parameters <expression>"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, eval.Evaluate(string.Join("", e.Data.MessageArray.Skip(1))).ToString());
+
+            return null;
         }
     }
 }

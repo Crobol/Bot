@@ -17,8 +17,15 @@ namespace Bot.Core.Commands
 
         public virtual string Help { get { return "No help message available for this command"; } }
 
-        public abstract void Execute(IrcEventArgs e);
+        public virtual void Execute(IrcEventArgs e)
+        {
+            CommandCompletedEventArgs args = DoWork(e);
+            if (args != null)
+                OnCommandCompleted(args);
+        }
 
+        protected abstract CommandCompletedEventArgs DoWork(IrcEventArgs e);
+ 
         protected void OnCommandCompleted(CommandCompletedEventArgs e)
         {
             if (CommandCompleted != null)

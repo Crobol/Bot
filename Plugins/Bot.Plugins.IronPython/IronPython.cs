@@ -57,6 +57,7 @@ namespace Bot.Plugins.IronPython
                 Initialize(config);
         }
 
+        public void OnCommandComplete(object sender, CommandCompletedEventArgs e) { }
         public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e) { }
         public void OnRawMessage(object sender, IrcEventArgs e) { }
 

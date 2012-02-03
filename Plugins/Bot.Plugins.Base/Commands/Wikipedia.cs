@@ -19,13 +19,6 @@ namespace Bot.Commands
     {
         private ILog log = LogManager.GetLogger(typeof(Wikipedia));
 
-        // TODO: Make command completed from AsyncCommand to Command to avoid this
-        [ImportingConstructor]
-        public Wikipedia([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
-        {
-            this.CommandCompleted += onCommandCompleted;
-        }
-
         public override string Name
         {
             get { return "Wikipedia"; }
@@ -36,7 +29,7 @@ namespace Bot.Commands
             get { return new string[] { "wikipedia" }; }
         }
 
-        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             string subject = string.Join(" ", e.Data.MessageArray.Skip(1)).Trim();
             subject = subject.Replace(" ", "_");

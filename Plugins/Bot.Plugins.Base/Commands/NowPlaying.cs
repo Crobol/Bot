@@ -25,10 +25,9 @@ namespace Bot.Commands
         private const string SystemName = "np";
 
         [ImportingConstructor]
-        public NowPlaying([Import("UserSystem")] UserSystem userSystem, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public NowPlaying([Import("UserSystem")] UserSystem userSystem)
         {
             this.userSystem = userSystem;
-            this.CommandCompleted += onCommandCompleted;
         }
 
         public override string Name
@@ -46,7 +45,7 @@ namespace Bot.Commands
             get { return "Fetches now playing information from last.fm. You can save your last.fm username by setting \"" + Name + ".<nickname>\" or when logged in \"" + Name + ".username\". Parameters: [<username>]"; }
         }
 
-        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             User user = userSystem.GetAuthenticatedUser(e.Data.From);
 

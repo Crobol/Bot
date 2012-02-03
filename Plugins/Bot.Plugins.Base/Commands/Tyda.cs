@@ -16,13 +16,6 @@ namespace Bot.Commands
     {
         private ILog log = LogManager.GetLogger(typeof(Tyda));
 
-        // TODO: Move command completed from AsyncCommand to Command to avoid this
-        [ImportingConstructor]
-        public Tyda([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
-        {
-            this.CommandCompleted += onCommandCompleted;
-        }
-
         public override string Name
         {
             get { return "Translate"; }
@@ -38,7 +31,7 @@ namespace Bot.Commands
             get { return "Makes a Tyda.se search and returns the first result. Parameters: <expression>"; }
         }
 
-        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             string url = "http://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
             string html = TryFetchHtml(url);

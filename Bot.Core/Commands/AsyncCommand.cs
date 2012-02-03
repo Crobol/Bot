@@ -16,13 +16,12 @@ namespace Bot.Core.Commands
         protected long lastCompleted = 0;
 
         protected delegate CommandCompletedEventArgs WorkerDelegate(IrcEventArgs e);
-        protected abstract CommandCompletedEventArgs Worker(IrcEventArgs e);
 
         public override void Execute(IrcEventArgs e)
         {
             Interlocked.Increment(ref counter);
 
-            WorkerDelegate worker = new WorkerDelegate(Worker);
+            WorkerDelegate worker = new WorkerDelegate(DoWork);
             AsyncCallback completedCallback = new AsyncCallback(CommandCompletedCallback);
 
             AsyncOperation async = AsyncOperationManager.CreateOperation(null);

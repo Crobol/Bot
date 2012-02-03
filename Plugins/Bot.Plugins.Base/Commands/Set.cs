@@ -36,7 +36,7 @@ namespace Bot.Commands
             get { return "Sets config value to <value>. Parameters: <valuename> <value>"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             User user = userSystem.GetAuthenticatedUser(e.Data.From);
 
@@ -48,6 +48,8 @@ namespace Bot.Commands
                 else
                     userSystem.SetUserSetting(null, args[1], args[2]);
             }
+
+            return null;
         } 
     }
 }

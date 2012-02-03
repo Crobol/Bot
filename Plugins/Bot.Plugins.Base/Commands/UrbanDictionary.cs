@@ -14,13 +14,6 @@ namespace Bot.Plugins.Base.Commands
     [Export(typeof(ICommand))]
     class UrbanDictionary : AsyncCommand
     {
-        // TODO: Move command completed from AsyncCommand to Command to avoid this
-        [ImportingConstructor]
-        public UrbanDictionary([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
-        {
-            this.CommandCompleted += onCommandCompleted;
-        }
-
         public override string Name
         {
             get { return "Urban Dictionary"; }
@@ -31,7 +24,7 @@ namespace Bot.Plugins.Base.Commands
 	        get { return new string[] { "ud", "urban-dictionary" }; }
         }
 
-        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             string url = "http://www.urbandictionary.com/define.php?term=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
             string html = HtmlHelper.GetFromUrl(url);

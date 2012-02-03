@@ -12,5 +12,6 @@ namespace Bot.Core.Commands
         string[] Aliases { get; }
         string Help { get; }
         void Execute(IrcEventArgs e);
+        event CommandCompletedEventHandler CommandCompleted;
     }
 }

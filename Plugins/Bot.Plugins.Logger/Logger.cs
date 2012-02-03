@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Bot.Core.Commands;
 using Bot.Core.Plugins;
 using Meebey.SmartIrc4net;
 using Nini.Config;
@@ -38,6 +39,7 @@ namespace Bot.Plugins.Logger
         public void OnQueryMessage(object sender, IrcEventArgs e) { }
         public void OnChannelMessage(object sender, IrcEventArgs e) { }
         public void OnError(object sender, Meebey.SmartIrc4net.ErrorEventArgs e) { }
+        public void OnCommandComplete(object sender, CommandCompletedEventArgs e) { }
         public void OnRawMessage(object sender, IrcEventArgs e) 
         {
             UTF8Encoding encoding =  (UTF8Encoding)Encoding.UTF8;

@@ -35,12 +35,12 @@ namespace Bot.Commands
             get { return "Adds user to database. Parameters: <username> <password> [<userlevel> = 1]"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             if (e.Data.MessageArray.Count() < 3)
             {
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "Missing parameters");
-                return;
+                return null;
             }
 
             User user = userSystem.GetAuthenticatedUser(e.Data.From);
@@ -63,8 +63,9 @@ namespace Bot.Commands
             else
             {
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");
-                return;
             }
+
+            return null;
         }
     }
 
@@ -94,12 +95,12 @@ namespace Bot.Commands
             get { return "Authenticates user until user leaves all channels where the bot is present. Parameters: <username> <password>"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             if (e.Data.MessageArray.Count() < 3)
             {
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "Invalid syntax");
-                return;
+                return null;
             }
 
             if (userSystem.AuthenticateUser(e.Data.MessageArray[1], e.Data.MessageArray[2], e.Data.Nick, e.Data.From))
@@ -110,6 +111,8 @@ namespace Bot.Commands
             {
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "Error");
             }
+
+            return null;
         }
     }
 
@@ -139,7 +142,7 @@ namespace Bot.Commands
             get { return "Lists all authenticated users"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
         {
             IList<User> users = userSystem.GetAuthenticatedUsers();
             string message = "Users: ";
@@ -150,6 +153,8 @@ namespace Bot.Commands
                     message += ", ";
             }
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+
+            return null;
         }
     }
 }

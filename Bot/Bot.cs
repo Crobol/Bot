@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
@@ -24,6 +25,9 @@ namespace Bot
 {
     class Bot
     {
+        public delegate void SendMessageEventHandler(object sender, string destination, string message);
+        //public event CommandCompletedEventHandler OnCommandCompleteEvent;
+
         #region Members
 
         private IrcClient irc;
@@ -38,9 +42,12 @@ namespace Bot
         [ImportMany] private IEnumerable<Processor> Processors { get; set; }
         private Dictionary<string, ICommand> commands = new Dictionary<string, ICommand>(); // Name <-> Command mapping
 
+        private ConcurrentQueue<string> responseBuffer = new ConcurrentQueue<string>(); // TODO: Per channel?
+
         private IConfig config;
 
         private string commandIdentifier = "!";
+        private static const int responseBufferLimit = 10;
 
         private static readonly DateTime startTime = DateTime.Now; // For uptime
         private static bool quit = false;
@@ -67,8 +74,8 @@ namespace Bot
         {
             this.config = config;
 
-            LoadPlugins(config.GetString("plugin-folder", "Plugins"));
-            MapCommands(config);
+            Compose(config.GetString("plugin-folder", "Plugins"));
+            RegisterCommands(Commands);
         }
 
         public Bot(string host, int port, bool useSsl, string[] channels)
@@ -81,16 +88,38 @@ namespace Bot
         
         #region Initialization
 
-        private void LoadPlugins(string pluginFolder = "Plugins")
+        private void Compose(string pluginFolder = "Plugins")
         {
             log.Info("Loading plugins...");
+
             var catalog = new DirectoryCatalog(pluginFolder);
             var container = new CompositionContainer(catalog);
+
+            //container.ComposeExportedValue<IrcClient>("Irc", irc);
             container.ComposeExportedValue<Dictionary<string, ICommand>>("Commands", commands);
             container.ComposeExportedValue<IConfig>("Config", config);
-            container.ComposeExportedValue<CommandCompletedEventHandler>("CommandCompletedEventHandler", OnCommandComplete);
             container.ComposeExportedValue<UserSystem>("UserSystem", userSystem);
+            container.ComposeExportedValue<CommandCompletedEventHandler>("CommandComplete", OnCommandComplete);
+            container.ComposeExportedValue<ConcurrentQueue<string>>("ResponseBuffer", responseBuffer);
+
             container.ComposeParts(this);
+        }
+
+        private void RegisterCommands(IEnumerable<ICommand> commands)
+        {
+            log.Info("Registering commands...");
+
+            foreach (ICommand command in commands)
+            {
+                command.CommandCompleted += this.OnCommandComplete;
+
+                // Create name -> command mapping
+                if (command.Aliases != null)
+                {
+                    foreach (string alias in command.Aliases)
+                        this.commands[commandIdentifier + alias] = command;
+                }
+            }
         }
 
         public void Connect()
@@ -120,6 +149,7 @@ namespace Bot
             irc.OnChannelMessage += new IrcEventHandler(OnChannelMessage);
             irc.OnError += new Meebey.SmartIrc4net.ErrorEventHandler(OnError);
             irc.OnRawMessage += new IrcEventHandler(OnRawMessage);
+            irc.OnJoin += new JoinEventHandler(OnJoin);
             irc.OnPart += new PartEventHandler(OnPart);
 
             log.Info("Initializing plugins...");
@@ -128,6 +158,8 @@ namespace Bot
                 plugin.Initialize(config);
                 irc.OnChannelMessage += new IrcEventHandler(plugin.OnChannelMessage);
                 irc.OnRawMessage += new IrcEventHandler(plugin.OnRawMessage);
+                irc.OnError += new Meebey.SmartIrc4net.ErrorEventHandler(plugin.OnError);
+                //this.OnCommandComplete += new CommandCompletedEventHandler(plugin.OnCommandComplete);
             }
 
             try
@@ -244,25 +276,6 @@ namespace Bot
 
             Bot.Run(servers, global);
         }
-        
-        /// <summary>
-        /// Register user invocable commands
-        /// </summary>
-        private void MapCommands(IConfig config)
-        {
-            log.Info("Mapping commands...");
-
-            // Create name -> command mapping
-            foreach (ICommand command in Commands)
-            {
-                //commands[commandIdentifier + command.Name] = command;
-                if (command.Aliases != null)
-                {
-                    foreach (string alias in command.Aliases)
-                        commands[commandIdentifier + alias] = command;
-                }
-            }
-        }
 
         #endregion
 
@@ -275,8 +288,21 @@ namespace Bot
                 && e.MessageLines.Count > 0)
             {
                 foreach (string line in e.MessageLines.Where(x => !string.IsNullOrWhiteSpace(x)))
+                {
                     irc.SendMessage(e.SendType, e.Destination, line);
+                    responseBuffer.Enqueue(line);
+                    while (responseBuffer.Count > responseBufferLimit)
+                    {
+                        string o;
+                        responseBuffer.TryDequeue(out o);
+                    }
+                }
             }
+        }
+
+        private void OnJoin(object sender, JoinEventArgs e)
+        {
+            
         }
 
         private void OnPart(object sender, PartEventArgs e)
