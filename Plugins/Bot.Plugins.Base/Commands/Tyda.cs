@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Bot.Core;
 using Bot.Core.Commands;
+using log4net;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
 
@@ -13,6 +14,8 @@ namespace Bot.Commands
     [Export(typeof(ICommand))]
     class Tyda : AsyncCommand
     {
+        private ILog log = LogManager.GetLogger(typeof(Tyda));
+
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
         public Tyda([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
@@ -38,7 +41,10 @@ namespace Bot.Commands
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string url = "http://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
-            string html = HtmlHelper.GetFromUrl(url);
+            string html = TryFetchHtml(url);
+
+            if (html == null)
+                return null;
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
@@ -66,6 +72,31 @@ namespace Bot.Commands
 				message = "No results found";
 			
             return new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });
+        }
+
+        private string TryFetchHtml(string url)
+        {
+            string html = null;
+
+            try
+            {
+                html = HtmlHelper.GetFromUrl(url);
+            }
+            catch (Exception ex)
+            {
+                log.Error("Exception when fetching HTML. Trying again...", ex);
+                try
+                {
+                    html = HtmlHelper.GetFromUrl(url);
+                }
+                catch (Exception ex2)
+                {
+                    log.Error("Exception when fetching HTML. Aborting...", ex2);
+                    return null;
+                }
+            }
+
+            return html;
         }
     }
 }
