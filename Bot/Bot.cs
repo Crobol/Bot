@@ -355,39 +355,7 @@ namespace Bot
             }
             else if (e.Data.Message.StartsWith(commandIdentifier))
             {
-                string command = null;
-                if (commands.ContainsKey(e.Data.MessageArray[0]))
-                    command = e.Data.MessageArray[0];
-                else
-                {
-                    IEnumerable<string> matches = commands.Keys.Where(x => x.StartsWith(e.Data.MessageArray[0]));
-                    if (matches.Count() == 1)
-                    {
-                        command = matches.First();
-                    }
-                    else if (matches.Count() > 1)
-                    {
-                        string message = "Did you mean " +
-                            matches.Aggregate(
-                                (sentence, x) =>
-                                    (x == matches.Last() ? sentence + " or " + x : sentence + ", " + x)
-                            );
-
-                        e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(command))
-                {
-                    try
-                    {
-                        commands[command].Execute(e);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Warn("Could not execute command \"" + commands[command].Name + "\"", ex);
-                    }
-                }
+                ProcessCommand(e.Data.MessageArray[0], e);
             }
             else
             {
@@ -401,23 +369,58 @@ namespace Bot
             {
                 irc.RfcQuit();
             }
-		}
+        }
+
+        private void ProcessCommand(string command, IrcEventArgs e)
+        {
+            command = command.ToLower();
+            if (!commands.ContainsKey(command))
+            {
+                IEnumerable<string> matches = commands.Keys.Where(x => x.StartsWith(command));
+                if (matches.Count() == 1)
+                {
+                    command = matches.First();
+                }
+                else if (matches.Count() > 1)
+                {
+                    string message = "Did you mean " +
+                        matches.Aggregate(
+                            (sentence, x) =>
+                                (x == matches.Last() ? sentence + " or " + x : sentence + ", " + x)
+                        );
+
+                    e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(command))
+            {
+                try
+                {
+                    commands[command].Execute(e);
+                }
+                catch (Exception ex)
+                {
+                    log.Warn("Could not execute command \"" + commands[command].Name + "\"", ex);
+                }
+            }
+        }
 		
-		private static IConfigSource CreateDefaultConfig(string filePath)
-		{
-			File.Create(filePath);
-			IConfigSource source = new IniConfigSource(filePath);
-			IConfig global = source.AddConfig("global");
+        private static IConfigSource CreateDefaultConfig(string filePath)
+        {
+	        File.Create(filePath);
+	        IConfigSource source = new IniConfigSource(filePath);
+	        IConfig global = source.AddConfig("global");
 			
-			global.Set("nick", "bot");
-			global.Set("script-folder", "Scripts");
-			global.Set("plugin-floder", "Plugins");
-			global.Set("title-whitelist", @"https?://(www.)?youtube\.com\S*, https?://open\.spotify\.com\S*");
+	        global.Set("nick", "bot");
+	        global.Set("script-folder", "Scripts");
+	        global.Set("plugin-floder", "Plugins");
+	        global.Set("title-whitelist", @"https?://(www.)?youtube\.com\S*, https?://open\.spotify\.com\S*");
 			
-			source.Save();
+	        source.Save();
 			
-			return source;
-		}
+	        return source;
+        }
 
         public static void Exit()
         {
