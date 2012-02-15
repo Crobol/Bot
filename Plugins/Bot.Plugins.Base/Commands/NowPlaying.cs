@@ -20,14 +20,14 @@ namespace Bot.Commands
     {
         private ILog log = LogManager.GetLogger(typeof(NowPlaying));
 
-        private UserService userService;
+        private UserSystem userSystem;
 
         private const string SystemName = "np";
 
         [ImportingConstructor]
-        public NowPlaying([Import("UserService")] UserService userService, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public NowPlaying([Import("UserSystem")] UserSystem userSystem, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
         {
-            this.userService = userService;
+            this.userSystem = userSystem;
             this.CommandCompleted += onCommandCompleted;
         }
 
@@ -48,7 +48,7 @@ namespace Bot.Commands
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            User user = userService.GetAuthenticatedUser(e.Data.From);
+            User user = userSystem.GetAuthenticatedUser(e.Data.From);
 
             string nick = "";
             string message = "";
@@ -61,11 +61,11 @@ namespace Bot.Commands
             {
                 if (user != null)
                 {
-                    nick = userService.GetUserSetting(user.ID, SystemName + ".username");
+                    nick = userSystem.GetUserSetting(user.ID, SystemName + ".username");
                 }
                 else
                 {
-                    nick = userService.GetUserSetting(null, SystemName + "." + e.Data.Nick);
+                    nick = userSystem.GetUserSetting(null, SystemName + "." + e.Data.Nick);
                     if (string.IsNullOrWhiteSpace(nick))
                         nick = e.Data.Nick;
                 }

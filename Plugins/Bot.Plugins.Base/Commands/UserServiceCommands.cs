@@ -12,12 +12,12 @@ namespace Bot.Commands
     [Export(typeof(ICommand))]
     class AddUser : Command
     {
-        UserService userService;
+        UserSystem userSystem;
 
         [ImportingConstructor]
-        public AddUser([Import("UserService")] UserService userService)
+        public AddUser([Import("UserSystem")] UserSystem userSystem)
         {
-            this.userService = userService;
+            this.userSystem = userSystem;
         }
 
         public override string Name
@@ -43,7 +43,7 @@ namespace Bot.Commands
                 return;
             }
 
-            User user = userService.GetAuthenticatedUser(e.Data.From);
+            User user = userSystem.GetAuthenticatedUser(e.Data.From);
 
             if (user != null && user.UserLevel == 10)
             {
@@ -51,7 +51,7 @@ namespace Bot.Commands
                 if (e.Data.MessageArray.Count() > 3)
                     int.TryParse(e.Data.MessageArray[3], out userLevel);
 
-                if (userService.CreateUser(e.Data.MessageArray[1], e.Data.MessageArray[2], userLevel) > 0)
+                if (userSystem.CreateUser(e.Data.MessageArray[1], e.Data.MessageArray[2], userLevel) > 0)
                 {
                     e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "User created");
                 }
@@ -71,12 +71,12 @@ namespace Bot.Commands
     [Export(typeof(ICommand))]
     class AuthenticateUser : Command
     {
-        UserService userService;
+        UserSystem userSystem;
 
         [ImportingConstructor]
-        public AuthenticateUser([Import("UserService")] UserService userService)
+        public AuthenticateUser([Import("UserSystem")] UserSystem userSystem)
         {
-            this.userService = userService;
+            this.userSystem = userSystem;
         }
 
         public override string Name
@@ -102,7 +102,7 @@ namespace Bot.Commands
                 return;
             }
 
-            if (userService.AuthenticateUser(e.Data.MessageArray[1], e.Data.MessageArray[2], e.Data.Nick, e.Data.From))
+            if (userSystem.AuthenticateUser(e.Data.MessageArray[1], e.Data.MessageArray[2], e.Data.Nick, e.Data.From))
             {
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "Authenticated");
             }
@@ -116,12 +116,12 @@ namespace Bot.Commands
     [Export(typeof(ICommand))]
     class ListAuthenticatedUsers : Command
     {
-        UserService userService;
+        UserSystem userSystem;
 
         [ImportingConstructor]
-        public ListAuthenticatedUsers([Import("UserService")] UserService userService)
+        public ListAuthenticatedUsers([Import("UserSystem")] UserSystem userSystem)
         {
-            this.userService = userService;
+            this.userSystem = userSystem;
         }
 
         public override string Name
@@ -141,7 +141,7 @@ namespace Bot.Commands
 
         public override void Execute(IrcEventArgs e)
         {
-            IList<User> users = userService.GetAuthenticatedUsers();
+            IList<User> users = userSystem.GetAuthenticatedUsers();
             string message = "Users: ";
             foreach (var user in users)
             {

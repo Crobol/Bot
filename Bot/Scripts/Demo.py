@@ -34,7 +34,7 @@ class Sing(Command):
 class PythonEval(Command):
 
 	def Execute(self, e):
-		user = userService.GetAuthenticatedUser(e.Data.From)
+		user = userSystem.GetAuthenticatedUser(e.Data.From)
 		if user and user.UserLevel == 10:
 			e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, str(eval(e.Data.Message.split(" ", 1)[-1], {'__builtins__':[]}, {})))
 		else:

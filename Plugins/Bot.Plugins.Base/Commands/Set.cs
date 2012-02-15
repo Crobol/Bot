@@ -13,12 +13,12 @@ namespace Bot.Commands
     [Export(typeof(ICommand))]
     class Set : Command
     {
-        UserService userService;
+        UserSystem userSystem;
         
         [ImportingConstructor]
-        public Set([Import("UserService")] UserService userService)
+        public Set([Import("UserSystem")] UserSystem userSystem)
         {
-            this.userService = userService;
+            this.userSystem = userSystem;
         }
 
         public override string Name
@@ -38,15 +38,15 @@ namespace Bot.Commands
 
         public override void Execute(IrcEventArgs e)
         {
-            User user = userService.GetAuthenticatedUser(e.Data.From);
+            User user = userSystem.GetAuthenticatedUser(e.Data.From);
 
             string[] args = e.Data.Message.Split(new char[] { ' ' }, 3);
             if (args.Length == 3)
             {
                 if (user != null)
-                    userService.SetUserSetting((int)user.ID, args[1], args[2]);
+                    userSystem.SetUserSetting((int)user.ID, args[1], args[2]);
                 else
-                    userService.SetUserSetting(null, args[1], args[2]);
+                    userSystem.SetUserSetting(null, args[1], args[2]);
             }
         } 
     }

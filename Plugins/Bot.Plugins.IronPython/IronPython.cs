@@ -24,14 +24,14 @@ namespace Bot.Plugins.IronPython
         private ScriptEngine ipy = null;
         private Dictionary<string, ICommand> commands;
         private IConfig config = null;
-        private UserService userService = null;
+        private UserSystem userSystem = null;
         string commandIdentifier = "!"; // TODO: Don't hard code this
 
         [ImportingConstructor]
-        public IronPython([Import("Commands")] Dictionary<string, ICommand> commands, [Import("UserService")] UserService userService)
+        public IronPython([Import("Commands")] Dictionary<string, ICommand> commands, [Import("UserSystem")] UserSystem userSystem)
         {
             this.commands = commands;
-            this.userService = userService;
+            this.userSystem = userSystem;
         }
 
         public void Initialize(IConfig config)
@@ -71,7 +71,7 @@ namespace Bot.Plugins.IronPython
                 try
                 {
                     scope = ipy.CreateScope();
-                    scope.SetVariable("userService", userService);
+                    scope.SetVariable("userSystem", userSystem);
 
                     ScriptSource scriptSource = ipy.CreateScriptSourceFromFile(file);
                     CompiledCode compiledCode = scriptSource.Compile();

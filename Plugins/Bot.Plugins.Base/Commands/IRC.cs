@@ -27,12 +27,12 @@ namespace Bot.Commands
     [Export(typeof(ICommand))]
     class Join : Command
     {
-        UserService userService;
+        UserSystem userSystem;
 
         [ImportingConstructor]
-        public Join([Import("UserService")] UserService userService)
+        public Join([Import("UserSystem")] UserSystem userSystem)
         {
-            this.userService = userService;
+            this.userSystem = userSystem;
         }
 
         public override string Name
@@ -47,7 +47,7 @@ namespace Bot.Commands
 
         public override void Execute(IrcEventArgs e)
         {
-            if (userService.IsAuthenticated(e.Data.From))
+            if (userSystem.IsAuthenticated(e.Data.From))
             {
                 string channel = e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault();
                 e.Data.Irc.RfcJoin(channel);
@@ -60,12 +60,12 @@ namespace Bot.Commands
     [Export(typeof(ICommand))]
     class Part : Command
     {
-        UserService userService;
+        UserSystem userSystem;
 
         [ImportingConstructor]
-        public Part([Import("UserService")] UserService userService)
+        public Part([Import("UserSystem")] UserSystem userSystem)
         {
-            this.userService = userService;
+            this.userSystem = userSystem;
         }
 
         public override string Name
@@ -80,7 +80,7 @@ namespace Bot.Commands
 
         public override void Execute(IrcEventArgs e)
         {
-            if (userService.IsAuthenticated(e.Data.From))
+            if (userSystem.IsAuthenticated(e.Data.From))
                 e.Data.Irc.RfcPart(e.Data.Channel);
             else
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");

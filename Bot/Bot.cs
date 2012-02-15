@@ -30,8 +30,8 @@ namespace Bot
         private ILog log = LogManager.GetLogger(typeof(Bot));
         private ServerDescriptor server;
 
+        private UserSystem userSystem;
         private BotDataContext db;
-        private UserService userService = null;
 
         [ImportMany] private IEnumerable<IPlugin> Plugins { get; set; }
         [ImportMany] private IEnumerable<ICommand> Commands { get; set; }
@@ -55,7 +55,7 @@ namespace Bot
             log.Info("Starting bot instance...");
 
             db = new BotDataContext(new SQLiteConnection("DbLinqProvider=Sqlite;Data Source=Bot.db;"));
-            userService = new UserService(db);
+            userSystem = new UserSystem(db);
         }
 
         public Bot(ServerDescriptor server) : this()
@@ -73,7 +73,7 @@ namespace Bot
 
         public Bot(string host, int port, bool useSsl, string[] channels)
         {
-            userService = new UserService(db);
+            userSystem = new UserSystem(db);
             server = new ServerDescriptor(host, port, useSsl, channels);
         }
 
@@ -89,7 +89,7 @@ namespace Bot
             container.ComposeExportedValue<Dictionary<string, ICommand>>("Commands", commands);
             container.ComposeExportedValue<IConfig>("Config", config);
             container.ComposeExportedValue<CommandCompletedEventHandler>("CommandCompletedEventHandler", OnCommandComplete);
-            container.ComposeExportedValue<UserService>("UserService", userService);
+            container.ComposeExportedValue<UserSystem>("UserSystem", userSystem);
             container.ComposeParts(this);
         }
 
@@ -286,7 +286,7 @@ namespace Bot
                 IrcUser user = e.Data.Irc.GetIrcUser(e.Who);
                 if (user != null)
                 {
-                    userService.DeauthenticateUser(user.Host);
+                    userSystem.DeauthenticateUser(user.Host);
                 }
             }
             else
@@ -346,7 +346,7 @@ namespace Bot
 
         private void ProcessIrcEvent(IrcEventArgs e)
         {
-            User user = userService.GetAuthenticatedUser(e.Data.From);
+            User user = userSystem.GetAuthenticatedUser(e.Data.From);
 
             if (e.Data.Message.StartsWith(commandIdentifier + "uptime"))
             {
