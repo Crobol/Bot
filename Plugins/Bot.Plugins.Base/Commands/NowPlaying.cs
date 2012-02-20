@@ -38,7 +38,7 @@ namespace Bot.Commands
 
         public override string[] Aliases
         {
-            get { return new string[] { "np, now-playing" }; }
+            get { return new string[] { "np", "now-playing" }; }
         }
 
         public override string Help
@@ -77,6 +77,10 @@ namespace Bot.Commands
                 message = FetchNowPlayingInfo(nick);
                 if (CloseCall())
                     message += " -- " + e.Data.Nick;
+            }
+            else
+            {
+                log.Warn("No nick found or specified");
             }
 
             CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });

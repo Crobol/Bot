@@ -14,11 +14,6 @@ namespace Bot.Plugins.Base.Commands
     {
         private MathEvaluator eval = new MathEvaluator();
 
-        public Calc()
-        {
-            
-        }
-
         public override string Name
         {
             get { return "Calc"; }

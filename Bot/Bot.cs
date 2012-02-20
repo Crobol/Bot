@@ -41,6 +41,7 @@ namespace Bot
         private IConfig config;
 
         private string commandIdentifier = "!";
+        private static readonly int responseBufferLimit = 10;
 
         private static readonly DateTime startTime = DateTime.Now; // For uptime
         private static bool quit = false;
@@ -51,7 +52,6 @@ namespace Bot
 
         public Bot()
         {
-            BasicConfigurator.Configure();
             log.Info("Starting bot instance...");
 
             db = new BotDataContext(new SQLiteConnection("DbLinqProvider=Sqlite;Data Source=Bot.db;"));
@@ -106,7 +106,6 @@ namespace Bot
             if (server == null)
                 throw new ArgumentNullException();
 
-            Thread.CurrentThread.Name = server.Host;
             irc = new IrcClient();
 
             // Settings
@@ -188,10 +187,17 @@ namespace Bot
         public static void Run(List<ServerDescriptor> servers, IConfig globalSettings)
         {
             Thread.CurrentThread.Name = "Main";
+            BasicConfigurator.Configure();
 
             foreach (ServerDescriptor server in servers)
             {
-                ThreadStart threadStart = delegate { Bot instance = new Bot(server, globalSettings); instance.Connect(); };
+                ServerDescriptor local = (ServerDescriptor)server.Clone();
+                ThreadStart threadStart = delegate 
+                {
+                    Thread.CurrentThread.Name = local.Host;
+                    Bot instance = new Bot(local, globalSettings);
+                    instance.Connect();
+                };
                 Thread thread = new Thread(threadStart);
                 thread.Start();
             }
@@ -212,14 +218,14 @@ namespace Bot
         /// <param name="configFilePath"></param>
         public static void Run(string filePath)
         {
-			IConfigSource source = null;
+            IConfigSource source = null;
 			
-			if (!File.Exists(filePath))
-			{
-				source = CreateDefaultConfig(filePath);
-			}
-			else
-				source = new IniConfigSource(filePath);
+            if (!File.Exists(filePath))
+            {
+                source = CreateDefaultConfig(filePath);
+            }
+            else
+                source = new IniConfigSource(filePath);
 
             IConfig global = source.Configs["global"];
 
@@ -393,7 +399,7 @@ namespace Bot
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(command))
+            if (!string.IsNullOrWhiteSpace(command) && commands.ContainsKey(command))
             {
                 try
                 {
@@ -408,18 +414,18 @@ namespace Bot
 		
         private static IConfigSource CreateDefaultConfig(string filePath)
         {
-	        File.Create(filePath);
-	        IConfigSource source = new IniConfigSource(filePath);
-	        IConfig global = source.AddConfig("global");
+            File.Create(filePath);
+            IConfigSource source = new IniConfigSource(filePath);
+            IConfig global = source.AddConfig("global");
 			
-	        global.Set("nick", "bot");
-	        global.Set("script-folder", "Scripts");
-	        global.Set("plugin-floder", "Plugins");
-	        global.Set("title-whitelist", @"https?://(www.)?youtube\.com\S*, https?://open\.spotify\.com\S*");
+            global.Set("nick", "bot");
+            global.Set("script-folder", "Scripts");
+            global.Set("plugin-floder", "Plugins");
+            global.Set("title-whitelist", @"https?://(www.)?youtube\.com\S*, https?://open\.spotify\.com\S*");
 			
-	        source.Save();
+            source.Save();
 			
-	        return source;
+            return source;
         }
 
         public static void Exit()

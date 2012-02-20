@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Bot.Core
 {
-    class ServerDescriptor
+    public class ServerDescriptor : ICloneable
     {
         public ServerDescriptor(string host, int port = 6667, bool useSsl = false)
         {
@@ -20,6 +20,13 @@ namespace Bot.Core
             this.Port = port;
             this.UseSsl = useSsl;
             this.Channels = channels;
+        }
+
+        public Object Clone()
+        {
+            ServerDescriptor clone = new ServerDescriptor(Host, Port, UseSsl);
+            clone.Channels = (string[])Channels.Clone();
+            return clone;
         }
 
         public string Host { get; set; }
