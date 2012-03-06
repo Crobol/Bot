@@ -86,4 +86,36 @@ namespace Bot.Commands
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");
         }
     }
+
+    [Export(typeof(ICommand))]
+    class Nick : Command
+    {
+        UserSystem userSystem;
+
+        [ImportingConstructor]
+        public Nick([Import("UserSystem")] UserSystem userSystem)
+        {
+            this.userSystem = userSystem;
+        }
+
+        public override string Name
+        {
+            get { return "Nick"; }
+        }
+
+        public override string[] Aliases
+        {
+            get { return new string[] { "nick" }; }
+        }
+
+        protected override CommandCompletedEventArgs DoWork(IrcEventArgs e)
+        {
+            if (e.Data.MessageArray.Count() > 1 && userSystem.IsAuthenticated(e.Data.From))
+                e.Data.Irc.RfcNick(e.Data.MessageArray[1]);
+            else
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");
+
+            return null;
+        }
+    }
 }
