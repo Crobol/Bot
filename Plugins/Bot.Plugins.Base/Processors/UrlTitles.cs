@@ -18,9 +18,14 @@ namespace Bot.Processors
     {
         private ILog log = LogManager.GetLogger(typeof(UrlTitles));
 
+        private BotDataContext db;
+
         WebClient webClient = new WebClient();
         private readonly List<Regex> urlPatterns = null;
-        protected readonly static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
+        private readonly static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
+
+        private bool saveLinks = true;
+        private bool saveLinksToWebService = true;
 
         private UrlTitles()
         {
@@ -34,9 +39,11 @@ namespace Bot.Processors
         }
 
         [ImportingConstructor]
-        public UrlTitles([Import("Config")] IConfig config) : this()
+        public UrlTitles([Import("Database")] BotDataContext database, [Import("Config")] IConfig config) : this()
         {
+            db = database;
             string[] patternStrings = config.GetString("title-whitelist").Split(',');
+            saveLinksToWebService = config.GetBoolean("save-links-to-web", true);
 
             urlPatterns = new List<Regex>();
             foreach (string patternString in patternStrings)
@@ -66,6 +73,21 @@ namespace Bot.Processors
                     if (CloseCall())
                         message += " -- " + e.Data.Nick;
                     e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+                }
+
+
+                if (saveLinks)
+                {
+                    MatchCollection matches = genericUrlPattern.Matches(e.Data.Message);
+                    foreach (Match match in matches)
+                    {
+                        UrlLog url = new UrlLog();
+                        url.Nick = e.Data.Nick;
+                        url.Url = match.Value;
+                        url.Date = DateTime.Now;
+                        db.UrlLog.InsertOnSubmit(url);
+                    }
+                    db.SubmitChanges();
                 }
             }
         }
@@ -105,7 +127,14 @@ namespace Bot.Processors
                 catch (Exception e)
                 {
                     log.Error("Error downloading HTML", e);
+                    continue;
                 }
+
+                /*if (saveLinksToWebService)
+                {
+                    webClient.Headers["Content-type"] = "application/x-www-form-urlencoded";
+                    string result = webClient.UploadString("http://suitup.destruktiv.se", "key=lolsecret&nick=" + + "&link=" + );
+                }*/
 
                 HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("//title");
 

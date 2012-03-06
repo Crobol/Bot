@@ -8,7 +8,7 @@ namespace Bot.Core
 {
     public class UserSystem
     {
-        private BotDataContext db = null;
+        private BotDataContext db;
         private IDictionary<string, User> authedUsers = new Dictionary<string, User>();
         SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
 

@@ -46,6 +46,14 @@ public partial class BotDataContext : DataContext
 	{
 		this.OnCreated();
 	}
+
+    public Table<UrlLog> UrlLog
+    {
+        get
+        {
+            return this.GetTable<UrlLog>();
+        }
+    }
 	
 	public Table<User> User
 	{
@@ -62,6 +70,179 @@ public partial class BotDataContext : DataContext
 			return this.GetTable <UserSetting>();
 		}
 	}
+}
+
+[Table(Name = "main.UrlLog")]
+public partial class UrlLog : System.ComponentModel.INotifyPropertyChanging, System.ComponentModel.INotifyPropertyChanged
+{
+
+    private static System.ComponentModel.PropertyChangingEventArgs emptyChangingEventArgs = new System.ComponentModel.PropertyChangingEventArgs("");
+
+    private System.DateTime _date;
+
+    private int _id;
+
+    private string _nick;
+
+    private string _title;
+
+    private string _url;
+
+    #region Extensibility Method Declarations
+    partial void OnCreated();
+
+    partial void OnDateChanged();
+
+    partial void OnDateChanging(System.DateTime value);
+
+    partial void OnIDChanged();
+
+    partial void OnIDChanging(int value);
+
+    partial void OnNickChanged();
+
+    partial void OnNickChanging(string value);
+
+    partial void OnTitleChanged();
+
+    partial void OnTitleChanging(string value);
+
+    partial void OnUrlChanged();
+
+    partial void OnUrlChanging(string value);
+    #endregion
+
+    public UrlLog()
+    {
+        this.OnCreated();
+    }
+
+    [Column(Storage = "_date", Name = "Date", DbType = "DATETIME", AutoSync = AutoSync.Never, CanBeNull = false)]
+    [DebuggerNonUserCode()]
+    public System.DateTime Date
+    {
+        get
+        {
+            return this._date;
+        }
+        set
+        {
+            if ((_date != value))
+            {
+                this.OnDateChanging(value);
+                this.SendPropertyChanging();
+                this._date = value;
+                this.SendPropertyChanged("Date");
+                this.OnDateChanged();
+            }
+        }
+    }
+
+    [Column(Storage = "_id", Name = "Id", DbType = "INTEGER", IsPrimaryKey = true, IsDbGenerated = true, AutoSync = AutoSync.Never, CanBeNull = false)]
+    [DebuggerNonUserCode()]
+    public int ID
+    {
+        get
+        {
+            return this._id;
+        }
+        set
+        {
+            if ((_id != value))
+            {
+                this.OnIDChanging(value);
+                this.SendPropertyChanging();
+                this._id = value;
+                this.SendPropertyChanged("ID");
+                this.OnIDChanged();
+            }
+        }
+    }
+
+    [Column(Storage = "_nick", Name = "Nick", DbType = "TEXT", AutoSync = AutoSync.Never, CanBeNull = false)]
+    [DebuggerNonUserCode()]
+    public string Nick
+    {
+        get
+        {
+            return this._nick;
+        }
+        set
+        {
+            if (((_nick == value) == false))
+            {
+                this.OnNickChanging(value);
+                this.SendPropertyChanging();
+                this._nick = value;
+                this.SendPropertyChanged("Nick");
+                this.OnNickChanged();
+            }
+        }
+    }
+
+    [Column(Storage = "_title", Name = "Title", DbType = "TEXT", AutoSync = AutoSync.Never)]
+    [DebuggerNonUserCode()]
+    public string Title
+    {
+        get
+        {
+            return this._title;
+        }
+        set
+        {
+            if (((_title == value) == false))
+            {
+                this.OnTitleChanging(value);
+                this.SendPropertyChanging();
+                this._title = value;
+                this.SendPropertyChanged("Title");
+                this.OnTitleChanged();
+            }
+        }
+    }
+
+    [Column(Storage = "_url", Name = "Url", DbType = "TEXT", AutoSync = AutoSync.Never, CanBeNull = false)]
+    [DebuggerNonUserCode()]
+    public string Url
+    {
+        get
+        {
+            return this._url;
+        }
+        set
+        {
+            if (((_url == value) == false))
+            {
+                this.OnUrlChanging(value);
+                this.SendPropertyChanging();
+                this._url = value;
+                this.SendPropertyChanged("Url");
+                this.OnUrlChanged();
+            }
+        }
+    }
+
+    public event System.ComponentModel.PropertyChangingEventHandler PropertyChanging;
+
+    public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void SendPropertyChanging()
+    {
+        System.ComponentModel.PropertyChangingEventHandler h = this.PropertyChanging;
+        if ((h != null))
+        {
+            h(this, emptyChangingEventArgs);
+        }
+    }
+
+    protected virtual void SendPropertyChanged(string propertyName)
+    {
+        System.ComponentModel.PropertyChangedEventHandler h = this.PropertyChanged;
+        if ((h != null))
+        {
+            h(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+        }
+    }
 }
 
 [Table(Name="main.User")]

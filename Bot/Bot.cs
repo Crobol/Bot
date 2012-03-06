@@ -90,6 +90,7 @@ namespace Bot
             container.ComposeExportedValue<IConfig>("Config", config);
             container.ComposeExportedValue<CommandCompletedEventHandler>("CommandCompletedEventHandler", OnCommandComplete);
             container.ComposeExportedValue<UserSystem>("UserSystem", userSystem);
+            container.ComposeExportedValue<BotDataContext>("Database", db);
             container.ComposeParts(this);
         }
 
