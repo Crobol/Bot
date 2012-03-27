@@ -70,7 +70,11 @@ namespace Bot.Plugins.Base.Commands
                 }
             }
 
-            e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
+            // TODO: Move this responsibility to Bot (through event?)
+            if (e.Data.Type == ReceiveType.QueryNotice)
+                e.Data.Irc.SendMessage(SendType.Notice, e.Data.Nick, message);
+            else
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
         }
     }
 }

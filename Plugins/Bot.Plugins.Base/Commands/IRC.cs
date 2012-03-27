@@ -14,7 +14,7 @@ namespace Bot.Commands
     {
         public override string Name
         {
-            get { return "say"; }
+            get { return "Say"; }
         }
 
         public override void Execute(IrcEventArgs e)

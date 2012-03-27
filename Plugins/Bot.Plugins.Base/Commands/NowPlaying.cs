@@ -60,15 +60,12 @@ namespace Bot.Commands
             else
             {
                 if (user != null)
-                {
                     nick = userSystem.GetUserSetting(user.ID, SystemName + ".username");
-                }
                 else
-                {
                     nick = userSystem.GetUserSetting(null, SystemName + "." + e.Data.Nick);
-                    if (string.IsNullOrWhiteSpace(nick))
-                        nick = e.Data.Nick;
-                }
+
+                if (string.IsNullOrWhiteSpace(nick))
+                    nick = e.Data.Nick;
             }
 
             if (!string.IsNullOrWhiteSpace(nick))

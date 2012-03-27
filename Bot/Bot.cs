@@ -121,6 +121,7 @@ namespace Bot
             irc.OnError += new Meebey.SmartIrc4net.ErrorEventHandler(OnError);
             irc.OnRawMessage += new IrcEventHandler(OnRawMessage);
             irc.OnPart += new PartEventHandler(OnPart);
+            irc.OnQueryNotice += new IrcEventHandler(OnQueryMessage);
 
             log.Info("Initializing plugins...");
             foreach (var plugin in Plugins)
