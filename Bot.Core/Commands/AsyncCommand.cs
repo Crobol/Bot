@@ -46,7 +46,7 @@ namespace Bot.Core.Commands
         }
 
         /// <summary>
-        /// Use to determine the proximity of calls to the same command
+        /// Use to determine the proximity of calls to the same command. TODO: Reconsider
         /// </summary>
         /// <param name="threshold">Last command completed threshold value</param>
         /// <returns>True if there are multiple calls running in parallel or if the last call completed under "threshold" ms ago</returns>

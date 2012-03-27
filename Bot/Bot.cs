@@ -27,7 +27,7 @@ namespace Bot
         #region Members
 
         private IrcClient irc;
-        private ILog log = LogManager.GetLogger(typeof(Bot));
+        private readonly ILog log = LogManager.GetLogger(typeof(Bot));
         private ServerDescriptor server;
 
         private UserSystem userSystem;
@@ -143,7 +143,7 @@ namespace Bot
 
             try
             {
-                irc.Login(config.GetString("nick", "slave"),
+                irc.Login(server.Nick,
                     config.GetString("realname", "slave"),
                     0,
                     config.GetString("username", "slave")
@@ -232,6 +232,7 @@ namespace Bot
 
             List<ServerDescriptor> servers = new List<ServerDescriptor>();
             IEnumerator enumerator = source.Configs.GetEnumerator();
+            string defaultNick = global.GetString("nick", "slave");
 
             while (enumerator.MoveNext())
             {
@@ -243,7 +244,8 @@ namespace Bot
                             config.GetString("host"),
                             config.GetInt("port", 6667),
                             config.GetBoolean("ssl", false),
-                            config.GetString("channels").Split(',')
+                            config.GetString("channels").Split(','),
+                            config.GetString("nick", defaultNick)
                         )
                     );
                 }
@@ -360,7 +362,7 @@ namespace Bot
                 TimeSpan uptime = DateTime.Now - startTime;
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, uptime.Days + "d " + uptime.Hours + "h " + uptime.Minutes + "m");
             }
-            else if (e.Data.Message.StartsWith(commandIdentifier))
+            else if (e.Data.Message.StartsWith(commandIdentifier) && !e.Data.Message.Equals(commandIdentifier))
             {
                 ProcessCommand(e.Data.MessageArray[0], e);
             }
