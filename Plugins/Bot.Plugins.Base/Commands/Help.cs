@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
 using Bot.Core;
 using Bot.Core.Commands;
@@ -37,9 +36,20 @@ namespace Bot.Plugins.Base.Commands
             get { return "Lists available commands or displays a help message for the command given as parameter. Parameters: [<command>]"; }
         }
 
+        public override string Signature
+        {
+            get
+            {
+                string signature = OptionParser.CreateCommandSignature(typeof(DefaultOption)); // TODO: Move to Command?
+                return Aliases.Aggregate((o, x) => o += "|" + x) + " " + signature;
+            }
+        }
+
         public override void Execute(IrcEventArgs e)
         {
             string message = "";
+
+            //DefaultOption options = OptionParser.Parse<DefaultOption>(e.Data.Message);
 
             // If parameter is given, show help message of command <parameter>
             if (e.Data.MessageArray.Count() > 1 && commands.ContainsKey(commandIdentifier + e.Data.MessageArray[1]))

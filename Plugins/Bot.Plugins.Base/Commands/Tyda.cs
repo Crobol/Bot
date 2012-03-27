@@ -11,6 +11,18 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
+    class TydaOptions
+    {
+        [DefaultOption]
+        [OptionFullName("query")]
+        public string Query { set; get; }
+
+        [OptionName("l", "lang")]
+        [OptionFullName("language")]
+        public string Language { set; get; }
+    }
+
+
     [Export(typeof(ICommand))]
     class Tyda : AsyncCommand
     {
@@ -30,17 +42,34 @@ namespace Bot.Commands
 
         public override string[] Aliases
         {
-            get { return new string[] { "t", "translate" }; }
+            get { return new string[] { "translate" }; }
         }
 
         public override string Help
         {
-            get { return "Makes a Tyda.se search and returns the first result. Parameters: <expression>"; }
+            get 
+            {
+                return "Tyda.se word lookup."; 
+            }
+        }
+
+        public override string Signature
+        {
+            get
+            {
+                string signature = OptionParser.CreateCommandSignature(typeof(TydaOptions));
+                return Aliases.Aggregate((o, x) => o += "|" + x) + " " + signature;
+            }
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            string url = "http://tyda.se/search?form=1&w=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
+            TydaOptions options = OptionParser.Parse<TydaOptions>(e.Data.Message);
+
+            string url = "http://tyda.se/search?form=1&w=" + options.Query;// + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
+            if (!string.IsNullOrEmpty(options.Language))
+                url += "&w_lang=" + options.Language;
+
             string html = TryFetchHtml(url);
 
             if (html == null)

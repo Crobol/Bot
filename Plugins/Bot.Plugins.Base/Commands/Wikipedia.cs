@@ -14,6 +14,18 @@ using log4net;
 
 namespace Bot.Commands
 {
+    class WikipediaOptions
+    {
+        [DefaultOption]
+        [OptionFullName("query")]
+        public string Query { get; set; }
+
+        [OptionName("l", "lang")]
+        [OptionFullName("language")]
+        [OptionDefault("en")]
+        public string Language { get; set; }
+    }
+
     [Export(typeof(ICommand))]
     class Wikipedia : AsyncCommand
     {
@@ -36,17 +48,36 @@ namespace Bot.Commands
             get { return new string[] { "wikipedia" }; }
         }
 
+        public override string Help
+        {
+            get
+            {
+                return "Gets first paragraph of matching article.";
+            }
+        }
+
+        public override string Signature
+        {
+            get
+            {
+                string signature = OptionParser.CreateCommandSignature(typeof(WikipediaOptions));
+                return Aliases.Aggregate((o, x) => o += "|" + x) + " " + signature;
+            }
+        }
+
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            string subject = string.Join(" ", e.Data.MessageArray.Skip(1)).Trim();
-            subject = subject.Replace(" ", "_");
-            subject = subject.UppercaseFirst();
+            WikipediaOptions options = OptionParser.Parse<WikipediaOptions>(e.Data.Message);
+
+            string query = options.Query;
+            query = query.Replace(" ", "_");
+            query = query.UppercaseFirst();
 
             IList<string> lines = new List<string>();
 
-            if (!string.IsNullOrWhiteSpace(subject))
+            if (!string.IsNullOrWhiteSpace(query))
             {
-                string url = "https://en.wikipedia.org/wiki/" + subject;
+                string url = "https://" + options.Language + ".wikipedia.org/wiki/" + query;
                 string message = FetchWikipedia(url);
 
                 if (!string.IsNullOrWhiteSpace(message))

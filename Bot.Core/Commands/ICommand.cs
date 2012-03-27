@@ -10,7 +10,10 @@ namespace Bot.Core.Commands
     {
         string Name { get; }
         string[] Aliases { get; }
+
         string Help { get; }
+        string Signature { get; }
+
         void Execute(IrcEventArgs e);
     }
 }
