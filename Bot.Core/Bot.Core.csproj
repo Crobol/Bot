@@ -62,8 +62,10 @@
     <Compile Include="Commands\AsyncCommand.cs" />
     <Compile Include="Commands\CommandCompletedEventArgs.cs" />
     <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\DefaultParam.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="HttpHelper.cs" />
+    <Compile Include="OptionParser.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Processors\AsyncProcessor.cs" />
     <Compile Include="Processors\Processor.cs" />
