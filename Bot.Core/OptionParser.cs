@@ -84,9 +84,9 @@ namespace Bot.Core
         private static Regex defaultRegex = new Regex(@"^![A-Za-z0-9-]+( -\w{1} [A-Za-z0-9]*| --[A-Za-z-]+ [A-Za-z0-9]*)* ([\w\d\s]+)$");
 
         /// <summary>
-        /// Parses a string and via reflection returns a filled class T
+        /// Parses a string and via reflection returns a filled instance of T
         /// </summary>
-        /// <typeparam name="T">Type of the class that hold the options</typeparam>
+        /// <typeparam name="T">Type of the class that holds the options</typeparam>
         /// <param name="s">String to parse</param>
         /// <returns>Instance of T filled with matching values</returns>
         public static T Parse<T>(string s) where T : new()

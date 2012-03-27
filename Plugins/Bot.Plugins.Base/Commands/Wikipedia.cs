@@ -31,7 +31,7 @@ namespace Bot.Commands
     {
         private ILog log = LogManager.GetLogger(typeof(Wikipedia));
 
-        // TODO: Make command completed from AsyncCommand to Command to avoid this
+        // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
         public Wikipedia([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
         {
