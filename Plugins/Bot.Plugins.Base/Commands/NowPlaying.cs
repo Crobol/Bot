@@ -96,7 +96,7 @@ namespace Bot.Commands
         {
             try
             {
-                string html = HtmlHelper.GetFromUrl("http://last.fm/user/" + lastfmUsername);
+                string html = HttpHelper.GetFromUrl("http://last.fm/user/" + lastfmUsername);
 
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(html);
@@ -109,7 +109,7 @@ namespace Bot.Commands
                     message = WebUtility.HtmlDecode(message);
 
                     string[] trackInfo = subjectNode.InnerText.Trim().Split('–');
-                    html = HtmlHelper.GetFromUrl("http://last.fm/music/" + trackInfo[0].Trim().Replace(' ', '+'));
+                    html = HttpHelper.GetFromUrl("http://last.fm/music/" + trackInfo[0].Trim().Replace(' ', '+'));
 
                     doc.LoadHtml(html);
 

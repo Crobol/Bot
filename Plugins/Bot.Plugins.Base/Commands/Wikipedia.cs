@@ -72,7 +72,7 @@ namespace Bot.Commands
         {
             try
             {
-                string html = HtmlHelper.GetFromUrl(url);
+                string html = HttpHelper.GetFromUrl(url);
 
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(html);

@@ -80,14 +80,14 @@ namespace Bot.Commands
 
             try
             {
-                html = HtmlHelper.GetFromUrl(url);
+                html = HttpHelper.GetFromUrl(url);
             }
             catch (Exception ex)
             {
                 log.Error("Exception when fetching HTML. Trying again...", ex);
                 try
                 {
-                    html = HtmlHelper.GetFromUrl(url);
+                    html = HttpHelper.GetFromUrl(url);
                 }
                 catch (Exception ex2)
                 {

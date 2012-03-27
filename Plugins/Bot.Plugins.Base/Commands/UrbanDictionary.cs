@@ -34,15 +34,22 @@ namespace Bot.Plugins.Base.Commands
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             string url = "http://www.urbandictionary.com/define.php?term=" + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
-            string html = HtmlHelper.GetFromUrl(url);
+            string html = "";
+
+            try
+            {
+                html = HttpHelper.GetFromUrl(url);
+            }
+            catch (Exception ex)
+            {
+                return new CommandCompletedEventArgs(e.Data.Channel, new List<string>() { "Error fetching result" });
+            }
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
-
             HtmlNode node = doc.DocumentNode.SelectSingleNode("//table [@id = 'entries']/descendant::td [starts-with(@id, 'entry_')]/div [@class = 'definition']");
-
+            
             IList<string> lines = new List<string>();
-
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
             {
                 lines.Add(("UrbanDictionary: " + WebUtility.HtmlDecode(node.InnerText)).FormatToIrc());

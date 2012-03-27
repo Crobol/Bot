@@ -63,7 +63,7 @@
     <Compile Include="Commands\CommandCompletedEventArgs.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="HtmlHelper.cs" />
+    <Compile Include="HttpHelper.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Processors\AsyncProcessor.cs" />
     <Compile Include="Processors\Processor.cs" />

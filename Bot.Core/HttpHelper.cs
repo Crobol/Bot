@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Bot.Core
 {
-    public class HtmlHelper
+    public class HttpHelper
     {
         public static string GetFromUrl(string url)
         {
@@ -16,14 +16,7 @@ namespace Bot.Core
             webClient.Proxy = null;
             webClient.Encoding = System.Text.Encoding.UTF8;
 
-            try
-            {
-                return webClient.DownloadString(url);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            return webClient.DownloadString(url);
         }
     }
 }

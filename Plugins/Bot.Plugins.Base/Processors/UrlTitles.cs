@@ -24,8 +24,8 @@ namespace Bot.Processors
         private readonly List<Regex> urlPatterns = null;
         private readonly static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
 
-        private bool saveLinks = true;
-        private bool saveLinksToWebService = true;
+        private bool saveLinks = false;
+        private bool saveLinksToWebService = false;
 
         private UrlTitles()
         {
@@ -74,7 +74,6 @@ namespace Bot.Processors
                         message += " -- " + e.Data.Nick;
                     e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
                 }
-
 
                 if (saveLinks)
                 {
@@ -126,7 +125,7 @@ namespace Bot.Processors
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error downloading HTML", e);
+                    log.Error("Error downloading HTML for " + match.Value, e);
                     continue;
                 }
 
