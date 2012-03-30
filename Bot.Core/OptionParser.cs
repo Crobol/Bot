@@ -122,7 +122,7 @@ namespace Bot.Core
                         longName = (attribute as OptionName).LongName;
                     }
 
-                    string defaultValue = "";
+                    string defaultValue = null;
                     foreach (var attribute in property.GetCustomAttributes(typeof(OptionDefault), false))
                     {
                         defaultValue = (attribute as OptionDefault).Default;
@@ -135,7 +135,7 @@ namespace Bot.Core
                         var match = optionPattern.Match(s);
                         if (match.Success)
                             property.SetValue(t, true, null);
-                        else
+                        else if (!string.IsNullOrEmpty(defaultValue))
                             property.SetValue(t, bool.Parse(defaultValue), null);
                     }
                     else if (property.PropertyType == typeof(string))
@@ -144,7 +144,7 @@ namespace Bot.Core
                         var match = optionPattern.Match(s);
                         if (match.Success && match.Groups.Count > 2 && match.Groups[2].Success)
                             property.SetValue(t, match.Groups[2].Value, null);
-                        else
+                        else if (!string.IsNullOrEmpty(defaultValue))
                             property.SetValue(t, defaultValue, null);
                     }
                     else if (property.PropertyType == typeof(int))
@@ -153,7 +153,7 @@ namespace Bot.Core
                         var match = optionPattern.Match(s);
                         if (match.Success && match.Groups.Count > 2 && match.Groups[2].Success)
                             property.SetValue(t, int.Parse(match.Groups[2].Value), null);
-                        else
+                        else if (!string.IsNullOrEmpty(defaultValue))
                             property.SetValue(t, int.Parse(defaultValue), null);
                     }
                     // TODO: Decimal
@@ -163,6 +163,11 @@ namespace Bot.Core
             return t;
         }
 
+        /// <summary>
+        /// Creates a signature string of the command type given
+        /// </summary>
+        /// <param name="t">Type of the command</param>
+        /// <returns>Signature string</returns>
         public static string CreateCommandSignature(Type t)
         {
             string signature = "";
@@ -212,6 +217,11 @@ namespace Bot.Core
             return signature;
         }
 
+        /// <summary>
+        /// Creates a help message based on the name and options of the type of the command given
+        /// </summary>
+        /// <param name="t">Type of the command</param>
+        /// <returns>Help message string</returns>
         public static string CreateHelpMessage(Type t)
         {
             string helpMessage = "";
