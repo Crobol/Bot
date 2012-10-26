@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using Bot.Core;
 using Bot.Core.Processors;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
@@ -20,17 +21,16 @@ namespace Bot.Processors
 
         private BotDataContext db;
 
-        WebClient webClient = new WebClient();
+        //WebClient webClient = new WebClient();
         private readonly List<Regex> urlPatterns = null;
         private readonly static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
 
         private bool saveLinks = false;
-        private bool saveLinksToWebService = false;
 
         private UrlTitles()
         {
-            webClient.CachePolicy = new System.Net.Cache.HttpRequestCachePolicy(System.Net.Cache.HttpRequestCacheLevel.CacheIfAvailable);
-            webClient.Proxy = null;
+            //webClient.CachePolicy = new System.Net.Cache.HttpRequestCachePolicy(System.Net.Cache.HttpRequestCacheLevel.CacheIfAvailable);
+            //webClient.Proxy = null;
         }
 
         public UrlTitles(List<Regex> urlPatterns) : this()
@@ -43,7 +43,6 @@ namespace Bot.Processors
         {
             db = database;
             string[] patternStrings = config.GetString("title-whitelist").Split(',');
-            saveLinksToWebService = config.GetBoolean("save-links-to-web", true);
 
             urlPatterns = new List<Regex>();
             foreach (string patternString in patternStrings)
@@ -120,7 +119,7 @@ namespace Bot.Processors
 
                 try
                 {
-                    string html = webClient.DownloadString(match.Value);
+                    string html = HttpHelper.GetFromUrl(match.Value); //webClient.DownloadString(match.Value);
                     doc.LoadHtml(html);
                 }
                 catch (Exception e)
@@ -128,12 +127,6 @@ namespace Bot.Processors
                     log.Error("Error downloading HTML for " + match.Value, e);
                     continue;
                 }
-
-                /*if (saveLinksToWebService)
-                {
-                    webClient.Headers["Content-type"] = "application/x-www-form-urlencoded";
-                    string result = webClient.UploadString("http://suitup.destruktiv.se", "key=lolsecret&nick=" + + "&link=" + );
-                }*/
 
                 HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("//title");
 

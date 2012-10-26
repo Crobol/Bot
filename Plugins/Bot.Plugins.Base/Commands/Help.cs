@@ -28,7 +28,7 @@ namespace Bot.Plugins.Base.Commands
 
         public override string[] Aliases
         {
-            get { return new string[] { "h", "help" }; }
+            get { return new string[] { "help" }; }
         }
 
         public override string Help

@@ -66,7 +66,7 @@ namespace Bot.Commands
         {
             TydaOptions options = OptionParser.Parse<TydaOptions>(e.Data.Message);
 
-            string url = "http://tyda.se/search?form=1&w=" + options.Query;// + e.Data.Message.Split(new char[] { ' ' }, 2).LastOrDefault(); // TODO: URL encode
+            string url = "http://tyda.se/search?form=1&w=" + options.Query; // TODO: URL encode
             if (!string.IsNullOrEmpty(options.Language))
                 url += "&w_lang=" + options.Language;
 
@@ -99,8 +99,11 @@ namespace Bot.Commands
             }
 			else
 				message = "No results found";
-			
-            return new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });
+
+            if (e.Data.Type == ReceiveType.QueryNotice)
+                return new CommandCompletedEventArgs(e.Data.Nick, new List<string> { message }, SendType.Notice);
+            else
+                return new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });
         }
 
         private string TryFetchHtml(string url)

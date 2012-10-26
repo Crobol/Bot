@@ -165,7 +165,7 @@ namespace Bot
             }
             catch (ConnectionException e)
             {
-                log.Error("Error", e);
+                log.Error("Connection error", e);
                 Thread.CurrentThread.Abort();
             }
             catch (Exception e)
@@ -254,7 +254,7 @@ namespace Bot
 
             Bot.Run(servers, global);
         }
-        
+
         /// <summary>
         /// Register user invocable commands
         /// </summary>
@@ -265,7 +265,6 @@ namespace Bot
             // Create name -> command mapping
             foreach (ICommand command in Commands)
             {
-                //commands[commandIdentifier + command.Name] = command;
                 if (command.Aliases != null)
                 {
                     foreach (string alias in command.Aliases)
@@ -284,9 +283,21 @@ namespace Bot
                 && !string.IsNullOrWhiteSpace(e.Destination)
                 && e.MessageLines.Count > 0)
             {
-                foreach (string line in e.MessageLines.Where(x => !string.IsNullOrWhiteSpace(x)))
-                    irc.SendMessage(e.SendType, e.Destination, line);
+                try
+                {
+                    foreach (string line in e.MessageLines.Where(x => !string.IsNullOrWhiteSpace(x)))
+                    {
+                        irc.SendMessage(e.SendType, e.Destination, line);
+                        Console.WriteLine(irc.Nickname + " -> " + e.Destination + ": " + line);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Error("Could not send message", ex);
+                }
             }
+            else
+                log.Info("Incomplete CommandCompletedEventArgs");
         }
 
         private void OnPart(object sender, PartEventArgs e)
@@ -308,7 +319,7 @@ namespace Bot
         private void OnQueryMessage(object sender, IrcEventArgs e)
         {
             if (config.GetBoolean("show-channel-messages", true))
-                System.Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Nick + ": " + e.Data.Message);
+                Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Nick + ": " + e.Data.Message);
 
             ProcessIrcEvent(e);
         }
@@ -316,7 +327,7 @@ namespace Bot
         private void OnChannelMessage(object sender, IrcEventArgs e)
         {
             if (config.GetBoolean("show-channel-messages", true))
-                System.Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Channel + ": " + e.Data.Message);
+                Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Channel + ": " + e.Data.Message);
 
             ProcessIrcEvent(e);
         }
@@ -362,6 +373,10 @@ namespace Bot
             {
                 TimeSpan uptime = DateTime.Now - startTime;
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, uptime.Days + "d " + uptime.Hours + "h " + uptime.Minutes + "m");
+            }
+            else if (e.Data.Message.StartsWith(commandIdentifier + "version"))
+            {
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "0.1.0");
             }
             else if (e.Data.Message.StartsWith(commandIdentifier) && !e.Data.Message.Equals(commandIdentifier))
             {

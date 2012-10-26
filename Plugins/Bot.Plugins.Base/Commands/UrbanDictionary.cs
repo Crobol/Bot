@@ -51,10 +51,7 @@ namespace Bot.Plugins.Base.Commands
             
             IList<string> lines = new List<string>();
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
-            {
                 lines.Add(("UrbanDictionary: " + WebUtility.HtmlDecode(node.InnerText)).FormatToIrc());
-                lines.Add(url);
-            }
             else
                 lines.Add("No results found");
 

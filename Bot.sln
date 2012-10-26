@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot", "Bot\Bot.csproj", "{5261D079-DCDB-4C74-B160-B9A65501ADE2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Core", "Bot.Core\Bot.Core.csproj", "{A7E37503-4444-490F-80FB-8A0E6A72FE71}"
@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{C3B5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.Logger", "Plugins\Bot.Plugins.Logger\Bot.Plugins.Logger.csproj", "{481C20DB-929C-454B-8146-0B7DF8D89ACD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.IronPython", "Plugins\Bot.Plugins.IronPython\Bot.Plugins.IronPython.csproj", "{E10EE22A-7387-43BB-914F-6F2A1671EC70}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.Base", "Plugins\Bot.Plugins.Base\Bot.Plugins.Base.csproj", "{371B986E-3117-4478-921F-D260B0FC0648}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.IronPython", "Plugins\Bot.Plugins.IronPython\Bot.Plugins.IronPython.csproj", "{E10EE22A-7387-43BB-914F-6F2A1671EC70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,16 +53,6 @@ Global
 		{481C20DB-929C-454B-8146-0B7DF8D89ACD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{481C20DB-929C-454B-8146-0B7DF8D89ACD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{481C20DB-929C-454B-8146-0B7DF8D89ACD}.Release|x86.ActiveCfg = Release|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|x86.ActiveCfg = Release|Any CPU
 		{371B986E-3117-4478-921F-D260B0FC0648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{371B986E-3117-4478-921F-D260B0FC0648}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{371B986E-3117-4478-921F-D260B0FC0648}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -73,13 +63,23 @@ Global
 		{371B986E-3117-4478-921F-D260B0FC0648}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{371B986E-3117-4478-921F-D260B0FC0648}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{371B986E-3117-4478-921F-D260B0FC0648}.Release|x86.ActiveCfg = Release|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{481C20DB-929C-454B-8146-0B7DF8D89ACD} = {C3B5C15B-41A4-4D03-9958-1D39D22C6ABE}
-		{E10EE22A-7387-43BB-914F-6F2A1671EC70} = {C3B5C15B-41A4-4D03-9958-1D39D22C6ABE}
 		{371B986E-3117-4478-921F-D260B0FC0648} = {C3B5C15B-41A4-4D03-9958-1D39D22C6ABE}
+		{E10EE22A-7387-43BB-914F-6F2A1671EC70} = {C3B5C15B-41A4-4D03-9958-1D39D22C6ABE}
 	EndGlobalSection
 EndGlobal
