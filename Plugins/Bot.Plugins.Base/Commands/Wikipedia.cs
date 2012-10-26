@@ -6,11 +6,12 @@ using System.Net;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
+using System.Xml.Linq;
 using Bot.Core;
 using Bot.Core.Commands;
 using HtmlAgilityPack;
-using Meebey.SmartIrc4net;
 using log4net;
+using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
@@ -22,14 +23,19 @@ namespace Bot.Commands
 
         [OptionName("l", "lang")]
         [OptionFullName("language")]
-        [OptionDefault("en")]
+        [DefaultValue("en")]
         public string Language { get; set; }
     }
 
     [Export(typeof(ICommand))]
     class Wikipedia : AsyncCommand
     {
-        private ILog log = LogManager.GetLogger(typeof(Wikipedia));
+        private readonly ILog log = LogManager.GetLogger(typeof(Wikipedia));
+
+        private readonly string searchUrl = "http://en.wikipedia.org/w/api.php?action=opensearch&limit=3&search=test";
+
+        // 0 = lang, 1 = title
+        private readonly string pageDataUrl = "https://{0}.wikipedia.org/w/api.php?action=query&prop=info|extracts&inprop=url&format=xml&exchars=400&explaintext&titles={1}";
 
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
@@ -52,7 +58,7 @@ namespace Bot.Commands
         {
             get
             {
-                return "Gets first paragraph of matching article.";
+                return "Get extract from matching article.";
             }
         }
 
@@ -69,22 +75,12 @@ namespace Bot.Commands
         {
             WikipediaOptions options = OptionParser.Parse<WikipediaOptions>(e.Data.Message);
 
-            string query = options.Query;
-            query = query.Replace(" ", "_");
-            query = query.UppercaseFirst();
-
             IList<string> lines = new List<string>();
 
-            if (!string.IsNullOrWhiteSpace(query))
+            if (!string.IsNullOrWhiteSpace(options.Query))
             {
-                string url = "https://" + options.Language + ".wikipedia.org/wiki/" + query;
-                string message = FetchWikipedia(url);
-
-                if (!string.IsNullOrWhiteSpace(message))
-                {
-                    lines.Add(message.FormatToIrc());
-                    lines.Add(url);
-                }
+                string url = string.Format(pageDataUrl, options.Language, options.Query);
+                lines = GetResult(url);
             }
 
             if (!lines.Any())
@@ -93,8 +89,35 @@ namespace Bot.Commands
             return new CommandCompletedEventArgs(e.Data.Channel, lines);
         }
 
+        protected IList<string> GetResult(string url)
+        {
+            IList<string> response = new List<string>();
+
+            try
+            {
+                string xml = HttpHelper.GetFromUrl(url);
+                System.IO.StringReader reader = new System.IO.StringReader(xml);
+                XElement root = XElement.Load(reader);
+
+                IEnumerable<XAttribute> attributes = root.Descendants("page").SelectMany(x => x.Attributes());
+                string pageUrl = (string)attributes.Where(x => x.Name == "fullurl").FirstOrDefault();
+
+                string extract = root.Descendants("page").Descendants("extract").FirstOrDefault().Value;
+                extract = extract.Replace('\n', ' ');
+
+                response.Add("Wiki: " + extract);
+                response.Add(pageUrl);
+            }
+            catch (Exception e)
+            {
+                log.Error("Exception trying to fetch Wikipedia article", e);
+            }
+
+            return response;
+        }
+
         /// <summary>
-        /// Fetches first 500 characters in wikipedia-article about "subject"
+        /// Fetches first 500 characters from specified Wikipedia article URL.
         /// </summary>
         /// <param name="irc"></param>
         /// <param name="destinationChannel"></param>
