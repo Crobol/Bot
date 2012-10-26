@@ -58,13 +58,13 @@ namespace Bot.Core
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class OptionDefault : Attribute
+    public class DefaultValue : Attribute
     {
         public string _default;
 
         public string Default { get { return _default; } }
 
-        public OptionDefault(string _default)
+        public DefaultValue(string _default)
         {
             this._default = _default;
         }
@@ -96,11 +96,7 @@ namespace Bot.Core
             var properties = t.GetType().GetProperties();
             foreach (var property in properties)
             {
-                bool defaultOption = false;
-                foreach (var attribute in property.GetCustomAttributes(typeof(DefaultOption), false))
-                {
-                    defaultOption = (attribute as DefaultOption).Default;
-                }
+                bool defaultOption = property.GetCustomAttributes(typeof(DefaultOption), false).Any(x => (x as DefaultOption).Default);
 
                 if (defaultOption)
                 {
@@ -111,7 +107,8 @@ namespace Bot.Core
                         property.SetValue(t, value, null);
                     else if (property.PropertyType == typeof(int))
                         property.SetValue(t, int.Parse(value), null);
-                    // TODO: Decimal
+                    else if (property.PropertyType == typeof(decimal))
+                        property.SetValue(t, decimal.Parse(value), null);
                 }
                 else
                 {
@@ -123,9 +120,9 @@ namespace Bot.Core
                     }
 
                     string defaultValue = null;
-                    foreach (var attribute in property.GetCustomAttributes(typeof(OptionDefault), false))
+                    foreach (var attribute in property.GetCustomAttributes(typeof(DefaultValue), false))
                     {
-                        defaultValue = (attribute as OptionDefault).Default;
+                        defaultValue = (attribute as DefaultValue).Default;
                     }
 
                     Regex optionPattern = null;
@@ -156,7 +153,73 @@ namespace Bot.Core
                         else if (!string.IsNullOrEmpty(defaultValue))
                             property.SetValue(t, int.Parse(defaultValue), null);
                     }
-                    // TODO: Decimal
+                    else if (property.PropertyType == typeof(decimal))
+                    {
+                        optionPattern = new Regex("(-" + shortName + "|--" + longName + ") (\\d+)");
+                        var match = optionPattern.Match(s);
+                        if (match.Success && match.Groups.Count > 2 && match.Groups[2].Success)
+                            property.SetValue(t, decimal.Parse(match.Groups[2].Value), null);
+                        else if (!string.IsNullOrEmpty(defaultValue))
+                            property.SetValue(t, decimal.Parse(defaultValue), null);
+                    }
+                }
+            }
+
+            return t;
+        }
+
+        public static T ParseByOrder<T>(string s, string delimiter = " ") where T : new()
+        {
+            T t = new T();
+
+            string[] args = s.Split(new [] { delimiter }, StringSplitOptions.RemoveEmptyEntries);
+            var properties = t.GetType().GetProperties();
+
+            if (args.Length - 1 == properties.Length)
+            {
+                int i = 1;
+
+                foreach (var property in properties)
+                {
+                    if (property.PropertyType == typeof(string))
+                    {
+                        property.SetValue(t, args[i], null);
+                    }
+                    else if (property.PropertyType == typeof(int))
+                    {
+                        property.SetValue(t, int.Parse(args[i]), null);
+                    }
+                    else if (property.PropertyType == typeof(decimal))
+                    {
+                        property.SetValue(t, decimal.Parse(args[i]), null);
+                    }
+                    i++;
+                }
+            }
+            else if (args.Length == 2)
+            {
+                foreach (var property in properties)
+                {
+                    string value = "";
+                    bool defaultOption = property.GetCustomAttributes(typeof(DefaultOption), false).Any(x => (x as DefaultOption).Default);
+
+                    if (defaultOption)
+                    {
+                        value = args[1];
+                    }
+                    else
+                    {
+                        var attribute = property.GetCustomAttributes(typeof(DefaultValue), false).FirstOrDefault();
+                        if (attribute != null)
+                            value = (attribute as DefaultValue).Default;
+                    }
+
+                    if (property.PropertyType == typeof(string))
+                        property.SetValue(t, value, null);
+                    else if (property.PropertyType == typeof(int))
+                        property.SetValue(t, int.Parse(value), null);
+                    else if (property.PropertyType == typeof(decimal))
+                        property.SetValue(t, decimal.Parse(value), null);
                 }
             }
 
