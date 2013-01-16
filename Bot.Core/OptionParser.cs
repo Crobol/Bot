@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Reflection;
+using Mono.Options;
 
 namespace Bot.Core
 {
@@ -10,7 +12,7 @@ namespace Bot.Core
     /// Used to map options to properties
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class OptionName : Attribute
+    public sealed class OptionName : Attribute
     {
         private string name;
         private string longName;
@@ -32,7 +34,7 @@ namespace Bot.Core
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class OptionDescription : Attribute
+    public sealed class OptionDescription : Attribute
     {
         private string description;
 
@@ -45,7 +47,7 @@ namespace Bot.Core
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class OptionFullName : Attribute
+    public sealed class OptionFullName : Attribute
     {
         private string fullName;
 
@@ -58,9 +60,9 @@ namespace Bot.Core
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class DefaultValue : Attribute
+    public sealed class DefaultValue : Attribute
     {
-        public string _default;
+        private string _default;
 
         public string Default { get { return _default; } }
 
@@ -71,17 +73,86 @@ namespace Bot.Core
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class DefaultOption : Attribute
+    public sealed class DefaultOption : Attribute
     {
         public bool Default { get { return true; } }
     }
 
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class Required : Attribute
+    {}
+
     /// <summary>
     /// Used to parse command options
     /// </summary>
-    public class OptionParser
+    public static class OptionParser
     {
-        private static Regex defaultRegex = new Regex(@"^![A-Za-z0-9-]+( -\w{1} [A-Za-z0-9]*| --[A-Za-z-]+ [A-Za-z0-9]*)* ([\w\d\s]+)$");
+        private static Regex defaultRegex = new Regex(@"^![A-Za-z0-9-]+( -\w{1}(?: [A-Za-z0-9]*| ""[A-Za-z0-9\s]+"")?| --[A-Za-z-]+(?: [A-Za-z0-9]*| ""[A-Za-z0-9\s]+"")?)* ([^\W]+.+)$");
+
+        public static T MonoParse<T>(string s) where T : new()
+        {
+            if (s == null)
+                throw new ArgumentNullException("Parameter \"s\" cannot be null.");
+            if (s.StartsWith("!")) // TODO: Do not hardcode "!"
+                s = s.Substring(s.IndexOf(' '));
+
+            var t = new T();
+            PropertyInfo defaultProperty = null;
+
+            var set = new OptionSet();
+
+            var properties = t.GetType().GetProperties();
+            foreach (var property in properties)
+            {
+                var sb = new StringBuilder();
+
+                bool defaultOption = property.GetAttributeValue((DefaultOption x) => true);
+                string description = property.GetAttributeValue((OptionDescription x) => x.Description);
+                bool required = property.GetAttributeValue((Required x) => true);
+                string defaultValue = property.GetAttributeValue((DefaultValue x) => x.Default);
+
+                if (defaultOption)
+                {
+                    defaultProperty = property;
+                }
+                else
+                {
+                    OptionName name = property.GetAttributeValue((OptionName x) => x);
+                    if (name != null)
+                    {
+                        sb.Append(name.Name);
+                        if (!string.IsNullOrEmpty(name.LongName))
+                            sb.Append("|").Append(name.LongName);
+                    }
+
+                    if (property.PropertyType != typeof(bool))
+                        sb.Append("=");
+
+                    set.Add(sb.ToString(), description,
+                            x =>
+                                {
+                                    if (string.IsNullOrEmpty(x) && !string.IsNullOrEmpty(defaultValue))
+                                        x = defaultValue;
+                                    
+                                    property.SetValue(t, Convert.ChangeType(x, property.PropertyType), null);
+                                }
+                        );
+                }
+            }
+
+            string[] args = StringExtensions.SplitArguments(s);
+            var extra = set.Parse(args);
+
+            if (defaultProperty != null && extra.Any())
+            {
+                string value = string.Join(" ", extra);
+                defaultProperty.SetValue(t, Convert.ChangeType(value, defaultProperty.PropertyType), null);    
+            }
+
+            // TODO: Fix required values
+
+            return t;
+        }
 
         /// <summary>
         /// Parses a string and via reflection returns a filled instance of T
@@ -91,7 +162,10 @@ namespace Bot.Core
         /// <returns>Instance of T filled with matching values</returns>
         public static T Parse<T>(string s) where T : new()
         {
-            T t = new T();
+            if (s == null)
+                throw new ArgumentNullException("Parameter \"s\" cannot be null.");
+
+            var t = new T();
             
             var properties = t.GetType().GetProperties();
             foreach (var property in properties)
@@ -103,7 +177,7 @@ namespace Bot.Core
                     var match = defaultRegex.Match(s);
                     string value = match.Groups[match.Groups.Count - 1].Value;
 
-                    if (property.PropertyType == typeof(string))
+                    if (property.PropertyType == typeof(string)) // TODO: Use Convert.ChangeType() instead
                         property.SetValue(t, value, null);
                     else if (property.PropertyType == typeof(int))
                         property.SetValue(t, int.Parse(value), null);
@@ -112,6 +186,8 @@ namespace Bot.Core
                 }
                 else
                 {
+                    bool required = property.GetAttributeValue((Required x) => true);
+
                     string shortName = "", longName = "";
                     foreach (var attribute in property.GetCustomAttributes(typeof(OptionName), false))
                     {
@@ -133,7 +209,7 @@ namespace Bot.Core
                         if (match.Success)
                             property.SetValue(t, true, null);
                         else if (!string.IsNullOrEmpty(defaultValue))
-                            property.SetValue(t, bool.Parse(defaultValue), null);
+                            property.SetValue(t, bool.Parse(defaultValue), null); // TODO: Use Convert.ChangeType() instead?
                     }
                     else if (property.PropertyType == typeof(string))
                     {
@@ -155,7 +231,7 @@ namespace Bot.Core
                     }
                     else if (property.PropertyType == typeof(decimal))
                     {
-                        optionPattern = new Regex("(-" + shortName + "|--" + longName + ") (\\d+)");
+                        optionPattern = new Regex("(-" + shortName + "|--" + longName + ") (\\d+\\.\\d+)");
                         var match = optionPattern.Match(s);
                         if (match.Success && match.Groups.Count > 2 && match.Groups[2].Success)
                             property.SetValue(t, decimal.Parse(match.Groups[2].Value), null);
@@ -233,6 +309,9 @@ namespace Bot.Core
         /// <returns>Signature string</returns>
         public static string CreateCommandSignature(Type t)
         {
+            if (t == null)
+                throw new ArgumentNullException("t");
+
             string signature = "";
             string defaultOptionName = "";
 
@@ -242,7 +321,7 @@ namespace Bot.Core
                 bool defaultOption = false;
                 foreach (var attribute in property.GetCustomAttributes(typeof(DefaultOption), false))
                 {
-                    defaultOption = (attribute as DefaultOption).Default;
+                    defaultOption = true;
                 }
 
                 string fullName = "";
@@ -263,8 +342,9 @@ namespace Bot.Core
                     string shortName = "", longName = "";
                     foreach (var attribute in property.GetCustomAttributes(typeof(OptionName), false))
                     {
-                        shortName = (attribute as OptionName).Name;
-                        longName = (attribute as OptionName).LongName;
+                        var optionName = attribute as OptionName;
+                        shortName = optionName.Name;
+                        longName = optionName.LongName;
                     }
 
                     signature += "[-" + shortName + ", --" + longName;
@@ -287,6 +367,9 @@ namespace Bot.Core
         /// <returns>Help message string</returns>
         public static string CreateHelpMessage(Type t)
         {
+            if (t == null)
+                throw new ArgumentNullException("t");
+
             string helpMessage = "";
 
             var properties = t.GetProperties();
@@ -295,8 +378,9 @@ namespace Bot.Core
                 string shortName = "", longName = "";
                 foreach (var attribute in property.GetCustomAttributes(typeof(OptionName), false))
                 {
-                    shortName = (attribute as OptionName).Name;
-                    longName = (attribute as OptionName).LongName;
+                    var optionName = attribute as OptionName;
+                    shortName = optionName.Name;
+                    longName = optionName.LongName;
                 }
 
                 string fullName = "";
