@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.Base", "Plugins
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Plugins.IronPython", "Plugins\Bot.Plugins.IronPython\Bot.Plugins.IronPython.csproj", "{E10EE22A-7387-43BB-914F-6F2A1671EC70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bot.Components", "Bot.Components\Bot.Components.csproj", "{E5232807-0CA8-4869-A751-27D59995E048}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

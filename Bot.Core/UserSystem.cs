@@ -1,16 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Bot.Core
 {
-    public class UserSystem
+    public interface IPersistentStore
     {
-        private BotDataContext db;
-        private IDictionary<string, User> authedUsers = new Dictionary<string, User>();
-        SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
+        T GetSetting<T>(string setting);
+        T GetUserSetting<T>(string nick, string setting);
+
+        /*bool AuthenticateUser(string username, string password, string nick, string ident);
+        bool DeauthenticateUser(string ident);
+        bool IsAuthenticated(string ident);*/
+    }
+
+    public class JsonPersistentStore : IPersistentStore
+    {
+        private readonly IDictionary<string, string> cache = new Dictionary<string, string>();
+        private readonly JObject json;
+
+        public JsonPersistentStore(string filepath)
+        {
+            TextReader textReader = File.OpenText(filepath);
+            JsonReader jsonReader = new JsonTextReader(textReader);
+            this.json = JObject.Load(jsonReader);
+        }
+
+        public T GetSetting<T>(string setting)
+        {
+            string value = (string) json.SelectToken("Settings." + setting);
+            return (T) Convert.ChangeType(value, typeof (T));
+        }
+
+        public T GetUserSetting<T>(string nick, string setting)
+        {
+            string value = (string) json.SelectToken("Users." + nick + "." + setting);
+            return (T) Convert.ChangeType(value, typeof(T));
+        }
+
+        public void SetUserSetting<T>(string ident, string setting, T value)
+        {
+            
+        }
+    }
+
+    /*public class UserSystem
+    {
+        private readonly BotDataContext db;
+        private readonly IDictionary<string, User> authedUsers = new Dictionary<string, User>();
+        private readonly SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
 
         public UserSystem(BotDataContext db)
         {
@@ -19,25 +62,22 @@ namespace Bot.Core
 
         public bool AuthenticateUser(string username, string password, string nick, string ident)
         {
-            SHA512CryptoServiceProvider sha512hasher = new SHA512CryptoServiceProvider();
             string hash = sha512hasher.ComputeHash(Encoding.Default.GetBytes(password)).ByteArrayToString();
 
             var users = from x in db.User where x.Username == username && x.Password == hash select x;
 
-            if (users.Any())
-            {
-                var user = users.First();
-                authedUsers[ident] = user;
-
-                user.LastNick = nick;
-                user.LastIdent = ident;
-
-                db.SubmitChanges();
-
-                return true;
-            }
-            else
+            if (!users.Any())
                 return false;
+
+            var user = users.First();
+            authedUsers[ident] = user;
+
+            user.LastNick = nick;
+            user.LastIdent = ident;
+
+            db.SubmitChanges();
+
+            return true;
         }
 
         public bool DeauthenticateUser(string ident)
@@ -149,5 +189,5 @@ namespace Bot.Core
 
             db.SubmitChanges();
         }
-    }
+    }*/
 }
