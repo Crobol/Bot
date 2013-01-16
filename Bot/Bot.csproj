@@ -50,6 +50,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CircularBuffer, Version=0.1.1.26121, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\CircularBuffer.dll</HintPath>
+    </Reference>
     <Reference Include="DbLinq">
       <HintPath>..\Libraries\DbLinq.dll</HintPath>
     </Reference>
@@ -154,6 +158,10 @@
     <None Include="Scripts\Demo.py" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bot.Components\Bot.Components.csproj">
+      <Project>{e5232807-0ca8-4869-a751-27d59995e048}</Project>
+      <Name>Bot.Components</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Bot.Core\Bot.Core.csproj">
       <Project>{A7E37503-4444-490F-80FB-8A0E6A72FE71}</Project>
       <Name>Bot.Core</Name>

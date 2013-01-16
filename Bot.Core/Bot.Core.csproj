@@ -65,7 +65,9 @@
     <Compile Include="Commands\CommandCompletedEventArgs.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\DefaultParam.cs" />
+    <Compile Include="Commands\IAltCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\AltCommand.cs" />
     <Compile Include="Component\Component.cs" />
     <Compile Include="Component\IComponent.cs" />
     <Compile Include="HttpHelper.cs" />
