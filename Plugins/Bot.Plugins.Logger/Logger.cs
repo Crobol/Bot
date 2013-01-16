@@ -15,11 +15,28 @@ namespace Bot.Plugins.Logger
     public class Logger : IPlugin, IDisposable
     {
         private FileStream rawLog;
+        private bool disposed = false;
 
         public void Dispose()
         {
-            rawLog.Flush();
-            rawLog.Close();
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing && rawLog != null)
+                {
+                    rawLog.Flush();
+                    rawLog.Close();
+                    rawLog.Dispose();
+                }
+
+                rawLog = null;
+                disposed = true;
+            }
         }
 
         public void Initialize(IConfig config)
