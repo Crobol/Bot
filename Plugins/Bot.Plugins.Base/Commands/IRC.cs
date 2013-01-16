@@ -17,6 +17,11 @@ namespace Bot.Commands
             get { return "Say"; }
         }
 
+        public override IList<string> Aliases
+        {
+            get { return new List<string> { "say" }; }
+        }
+
         public override void Execute(IrcEventArgs e)
         {
             string message = e.Data.Message.Split(new char[] {' '}, 2).LastOrDefault();
@@ -24,7 +29,7 @@ namespace Bot.Commands
         } 
     }
 
-    [Export(typeof(ICommand))]
+    /*[Export(typeof(ICommand))]
     class Join : Command
     {
         UserSystem userSystem;
@@ -40,7 +45,7 @@ namespace Bot.Commands
             get { return "Join"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "join" }; }
         }
@@ -73,7 +78,7 @@ namespace Bot.Commands
             get { return "Part"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "part" }; }
         }
@@ -103,7 +108,7 @@ namespace Bot.Commands
             get { return "Nick"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "nick" }; }
         }
@@ -115,5 +120,5 @@ namespace Bot.Commands
             else
                 e.Data.Irc.SendMessage(SendType.Message, e.Data.Nick, "You do not have authorization to use this command");
         }
-    }
+    }*/
 }

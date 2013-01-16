@@ -56,17 +56,46 @@
     <Reference Include="DbLinq.Sqlite">
       <HintPath>..\Libraries\DbLinq.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlAgilityPack">
-      <HintPath>..\Libraries\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="log4net">
-      <HintPath>..\Libraries\log4net.dll</HintPath>
+    <Reference Include="IronPython">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\IronPython.dll</HintPath>
+    </Reference>
+    <Reference Include="IronPython.Modules">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\IronPython.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="IronPython.SQLite">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\IronPython.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="IronPython.Wpf">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\IronPython.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Meebey.SmartIrc4net">
       <HintPath>..\Libraries\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Dynamic">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\Microsoft.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\Microsoft.Scripting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.AspNet">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\Microsoft.Scripting.AspNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.Metadata">
+      <HintPath>..\packages\IronPython.2.7.3\lib\Net40\Microsoft.Scripting.Metadata.dll</HintPath>
+    </Reference>
     <Reference Include="Nini">
       <HintPath>..\Libraries\Nini.dll</HintPath>
+    </Reference>
+    <Reference Include="Python.Runtime">
+      <HintPath>..\Libraries\Python.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Starksoft.Net.Proxy">
       <HintPath>..\Libraries\Starksoft.Net.Proxy.dll</HintPath>
@@ -121,6 +150,7 @@
     <None Include="App.Config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="packages.config" />
     <None Include="Scripts\Demo.py" />
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +163,10 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(ProjectDir)Scripts" "$(ProjectDir)bin\Release\Scripts" /s /i /y
 xcopy "$(ProjectDir)Bot.db" "$(ProjectDir)bin\Release\" /y</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

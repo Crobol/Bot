@@ -11,54 +11,42 @@ namespace Bot.Core.Commands
 {
     public abstract class AsyncCommand : Command
     {
-        protected Object _lock = new Object();
-        protected int counter = 0;
-        protected long lastCompleted = 0;
+        protected long counter = 0;
 
-        protected delegate CommandCompletedEventArgs WorkerDelegate(IrcEventArgs e);
+        protected delegate CommandCompletedEventArgs WorkerFunc(IrcEventArgs e);
         protected abstract CommandCompletedEventArgs Worker(IrcEventArgs e);
 
         public override void Execute(IrcEventArgs e)
         {
             Interlocked.Increment(ref counter);
 
-            WorkerDelegate worker = new WorkerDelegate(Worker);
+            WorkerFunc worker = new WorkerFunc(Worker);
             AsyncCallback completedCallback = new AsyncCallback(CommandCompletedCallback);
 
             AsyncOperation async = AsyncOperationManager.CreateOperation(null);
             worker.BeginInvoke(e, completedCallback, async);
         }
 
-        protected void CommandCompletedCallback(IAsyncResult ar)
+        private void CommandCompletedCallback(IAsyncResult ar)
         {
-            WorkerDelegate worker = (WorkerDelegate)((AsyncResult)ar).AsyncDelegate;
+            WorkerFunc worker = (WorkerFunc)((AsyncResult)ar).AsyncDelegate;
             AsyncOperation async = (AsyncOperation)ar.AsyncState;
 
             CommandCompletedEventArgs completedArgs = worker.EndInvoke(ar);
 
-            lock (_lock)
-            {
-                counter--;
-                lastCompleted = System.Diagnostics.Stopwatch.GetTimestamp();
-            }
+            Interlocked.Decrement(ref counter);
             
             async.PostOperationCompleted(delegate(object e) { OnCommandCompleted((CommandCompletedEventArgs)e); }, completedArgs);
         }
 
         /// <summary>
-        /// Use to determine the proximity of calls to the same command. TODO: Reconsider
+        /// Used to determine if there are parallell calls of this command running. TODO: Reconsider
         /// </summary>
-        /// <param name="threshold">Last command completed threshold value</param>
-        /// <returns>True if there are multiple calls running in parallel or if the last call completed under "threshold" ms ago</returns>
-        protected bool CloseCall(long threshold = 1000)
+        /// <returns>True if there are multiple calls running in parallel.</returns>
+        protected bool ParallelCalls()
         {
-            bool result = false;
-            lock (_lock)
-            {
-                if (counter > 1 || (System.Diagnostics.Stopwatch.GetTimestamp() - lastCompleted) < (System.Diagnostics.Stopwatch.Frequency / 1000 * threshold))
-                    result = true;
-            }
-            return result;
+            long c = Interlocked.Read(ref counter);
+            return c > 1;
         }
     }
 }

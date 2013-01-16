@@ -19,29 +19,17 @@ namespace Bot.Processors
     {
         private ILog log = LogManager.GetLogger(typeof(UrlTitles));
 
-        private BotDataContext db;
-
-        //WebClient webClient = new WebClient();
         private readonly List<Regex> urlPatterns = null;
         private readonly static Regex genericUrlPattern = new Regex(@"https?://\S+", RegexOptions.IgnoreCase);
 
-        private bool saveLinks = false;
-
-        private UrlTitles()
-        {
-            //webClient.CachePolicy = new System.Net.Cache.HttpRequestCachePolicy(System.Net.Cache.HttpRequestCacheLevel.CacheIfAvailable);
-            //webClient.Proxy = null;
-        }
-
-        public UrlTitles(List<Regex> urlPatterns) : this()
+        public UrlTitles(List<Regex> urlPatterns)
         {
             this.urlPatterns = urlPatterns;
         }
 
         [ImportingConstructor]
-        public UrlTitles([Import("Database")] BotDataContext database, [Import("Config")] IConfig config) : this()
+        public UrlTitles([Import("Config")] IConfig config)
         {
-            db = database;
             string[] patternStrings = config.GetString("title-whitelist").Split(',');
 
             urlPatterns = new List<Regex>();
@@ -69,23 +57,9 @@ namespace Bot.Processors
                 foreach (string title in titles)
                 {
                     string message = "Title: " + title;
-                    if (CloseCall())
+                    if (ParallelCalls())
                         message += " -- " + e.Data.Nick;
                     e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
-                }
-
-                if (saveLinks)
-                {
-                    MatchCollection matches = genericUrlPattern.Matches(e.Data.Message);
-                    foreach (Match match in matches)
-                    {
-                        UrlLog url = new UrlLog();
-                        url.Nick = e.Data.Nick;
-                        url.Url = match.Value;
-                        url.Date = DateTime.Now;
-                        db.UrlLog.InsertOnSubmit(url);
-                    }
-                    db.SubmitChanges();
                 }
             }
         }
@@ -119,7 +93,7 @@ namespace Bot.Processors
 
                 try
                 {
-                    string html = HttpHelper.GetFromUrl(match.Value); //webClient.DownloadString(match.Value);
+                    string html = HttpHelper.GetFromUrl(match.Value);
                     doc.LoadHtml(html);
                 }
                 catch (Exception e)

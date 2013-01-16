@@ -9,14 +9,18 @@ namespace Bot.Core.Commands
 {
     public class CommandCompletedEventArgs : EventArgs
     {
-        public IList<string> MessageLines { get; set; }
-        public string Destination { get; set; }
+        public IList<string> MessageLines { get { return messageLines; } }
+        public string Server { get; set; }
+        public string Channel { get; set; }
         public SendType SendType { get; set; }
 
-        public CommandCompletedEventArgs(string destination, IList<string> messageLines, SendType sendType = SendType.Message)
+        private IList<string> messageLines;
+
+        public CommandCompletedEventArgs(string server, string channel, IList<string> messageLines, SendType sendType = SendType.Message)
         {
-            MessageLines = messageLines;
-            Destination = destination;
+            this.messageLines = messageLines;
+            Channel = channel;
+            Server = server;
             SendType = sendType;
         }
     }

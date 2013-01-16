@@ -16,7 +16,7 @@ namespace Bot.Plugins.Base.Commands
     {
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public UrbanDictionary([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public UrbanDictionary([Import("CommandCompletedEventHandler")] Core.Commands.EventHandler onCommandCompleted)
         {
             this.CommandCompleted += onCommandCompleted;
         }
@@ -26,9 +26,9 @@ namespace Bot.Plugins.Base.Commands
             get { return "Urban Dictionary"; }
         }
 
-        public override string[]  Aliases
+        public override IList<string> Aliases
         {
-	        get { return new string[] { "ud", "urban-dictionary" }; }
+	        get { return new List<string> { "ud", "urban-dictionary" }; }
         }
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
@@ -42,7 +42,7 @@ namespace Bot.Plugins.Base.Commands
             }
             catch (Exception ex)
             {
-                return new CommandCompletedEventArgs(e.Data.Channel, new List<string>() { "Error fetching result" });
+                return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, new List<string>() { "Error fetching result" });
             }
 
             HtmlDocument doc = new HtmlDocument();
@@ -55,7 +55,7 @@ namespace Bot.Plugins.Base.Commands
             else
                 lines.Add("No results found");
 
-            return new CommandCompletedEventArgs(e.Data.Channel, lines);
+            return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, lines);
         }
     }
 }

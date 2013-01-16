@@ -30,7 +30,7 @@ namespace Bot.Commands
 
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public Tyda([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public Tyda([Import("CommandCompletedEventHandler")] Core.Commands.EventHandler onCommandCompleted)
         {
             this.CommandCompleted += onCommandCompleted;
         }
@@ -40,9 +40,9 @@ namespace Bot.Commands
             get { return "Translate"; }
         }
 
-        public override string[] Aliases
+        public override IList<string> Aliases
         {
-            get { return new string[] { "translate" }; }
+            get { return new List<string> { "translate" }; }
         }
 
         public override string Help
@@ -64,23 +64,30 @@ namespace Bot.Commands
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
+            string message;
             TydaOptions options = OptionParser.Parse<TydaOptions>(e.Data.Message);
 
             string url = "http://tyda.se/search?form=1&w=" + options.Query; // TODO: URL encode
             if (!string.IsNullOrEmpty(options.Language))
                 url += "&w_lang=" + options.Language;
 
-            string html = TryFetchHtml(url);
+            string html;
 
-            if (html == null)
+            try
+            {
+                html = HttpHelper.GetFromUrl(url);
+            }
+            catch (Exception ex)
+            {
+                log.Error("Could not download HTML from URL: " + url, ex);
                 return null;
+            }
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
 
             HtmlNodeCollection foundNodes = doc.DocumentNode.SelectNodes("//div [@class = 'tyda_content']/descendant::table [@class = 'tyda_res_body']/descendant::table [starts-with(@class, 'tyda_res_body_trans')]/descendant::a [starts-with(@id, 'tyda_trans')]");
 
-            string message;
             if (foundNodes != null && foundNodes.Count > 0)
             {
 				StringBuilder sb = new StringBuilder();
@@ -101,34 +108,9 @@ namespace Bot.Commands
 				message = "No results found";
 
             if (e.Data.Type == ReceiveType.QueryNotice)
-                return new CommandCompletedEventArgs(e.Data.Nick, new List<string> { message }, SendType.Notice);
+                return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Nick, new List<string> { message }, SendType.Notice);
             else
-                return new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });
-        }
-
-        private string TryFetchHtml(string url)
-        {
-            string html = null;
-
-            try
-            {
-                html = HttpHelper.GetFromUrl(url);
-            }
-            catch (Exception ex)
-            {
-                log.Error("Exception when fetching HTML. Trying again...", ex);
-                try
-                {
-                    html = HttpHelper.GetFromUrl(url);
-                }
-                catch (Exception ex2)
-                {
-                    log.Error("Exception when fetching HTML. Aborting...", ex2);
-                    return null;
-                }
-            }
-
-            return html;
+                return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, new List<string> { message });
         }
     }
 }

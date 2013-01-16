@@ -10,18 +10,39 @@ using LoreSoft.MathExpressions;
 namespace Bot.Plugins.Base.Commands
 {
     [Export(typeof(ICommand))]
-    class Calc : Command
+    class Calc : Command, IDisposable
     {
         private MathEvaluator eval = new MathEvaluator();
+        private bool disposed = false;
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing && eval != null)
+                {
+                    eval.Dispose();
+                }
+
+                eval = null;
+                disposed = true;
+            }
+       }
 
         public override string Name
         {
             get { return "Calc"; }
         }
 
-        public override string[] Aliases
+        public override IList<string> Aliases
         {
-            get { return new string[] { "calc" }; }
+            get { return new List<string> { "calc" }; }
         }
 
         public override string Help

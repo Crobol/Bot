@@ -25,10 +25,10 @@ namespace Bot.Commands
         private const string SystemName = "np";
 
         [ImportingConstructor]
-        public NowPlaying([Import("UserSystem")] UserSystem userSystem, [Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public NowPlaying([Import("UserSystem")] UserSystem userSystem, [Import("CommandCompletedEventHandler")] Core.Commands.EventHandler onCommandCompleted)
         {
-            this.userSystem = userSystem;
             this.CommandCompleted += onCommandCompleted;
+            this.userSystem = userSystem;
         }
 
         public override string Name
@@ -36,9 +36,9 @@ namespace Bot.Commands
             get { return "Now Playing"; }
         }
 
-        public override string[] Aliases
+        public override IList<string> Aliases
         {
-            get { return new string[] { "np", "now-playing" }; }
+            get { return new List<string> { "np", "now-playing" }; }
         }
 
         public override string Help
@@ -48,8 +48,6 @@ namespace Bot.Commands
 
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
-            User user = userSystem.GetAuthenticatedUser(e.Data.From);
-
             string nick = "";
             string message = "";
 
@@ -59,6 +57,8 @@ namespace Bot.Commands
             }
             else
             {
+                User user = userSystem.GetAuthenticatedUser(e.Data.From);
+
                 if (user != null)
                     nick = userSystem.GetUserSetting(user.ID, SystemName + ".username");
                 else
@@ -72,7 +72,7 @@ namespace Bot.Commands
             {
                 log.Info("Fetching now playing information for user \"" + nick + "\"");
                 message = FetchNowPlayingInfo(nick);
-                if (CloseCall())
+                if (ParallelCalls())
                     message += " -- " + e.Data.Nick;
             }
             else
@@ -80,13 +80,13 @@ namespace Bot.Commands
                 log.Warn("No nick found or specified");
             }
 
-            CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Channel, new List<string> { message });
+            CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, new List<string> { message });
 
             return completedArgs;
         }
 
         /// <summary>
-        /// Fetches and parses the Now Playing information from http://last.fm/user/lastfmUsername
+        /// Fetches and parses the Now Playing information from http://last.fm/user/<lastfmUsername>
         /// </summary>
         /// <param name="lastfmUsername">Last.fm username to fetch from</param>
         protected string FetchNowPlayingInfo(string lastfmUsername)
@@ -110,7 +110,7 @@ namespace Bot.Commands
 
                     doc.LoadHtml(html);
 
-                    HtmlNode tagsNode = doc.DocumentNode.SelectSingleNode("//div [@class = 'tags']/p/a");
+                    HtmlNode tagsNode = doc.DocumentNode.SelectSingleNode("//section [@class = 'global-tags']/ul/li/a");
 
                     if (tagsNode != null && !string.IsNullOrWhiteSpace(tagsNode.InnerText))
                     {

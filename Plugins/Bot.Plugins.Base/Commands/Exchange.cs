@@ -36,7 +36,7 @@ namespace Bot.Commands
 
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public Exchange([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public Exchange([Import("CommandCompletedEventHandler")] Core.Commands.EventHandler onCommandCompleted)
         {
             this.CommandCompleted += onCommandCompleted;
         }
@@ -46,9 +46,9 @@ namespace Bot.Commands
             get { return "Exchange"; }
         }
 
-        public override string[] Aliases
+        public override IList<string> Aliases
         {
-            get { return new string[] { "exchange" }; }
+            get { return new List<string> { "exchange" }; }
         }
 
         public override string Help
@@ -68,7 +68,7 @@ namespace Bot.Commands
         protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
         {
             IList<string> lines = new List<string>();
-
+            
             try
             {
                 ExchangeOptions options = OptionParser.ParseByOrder<ExchangeOptions>(e.Data.Message);
@@ -89,7 +89,7 @@ namespace Bot.Commands
                 log.Error("Error calculating exchange", ex);
             }
 
-            return new CommandCompletedEventArgs(e.Data.Channel, lines);
+            return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, lines);
         }
     }
 }

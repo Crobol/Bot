@@ -26,7 +26,7 @@ namespace Bot.Plugins.Base.Commands
             get { return "Signature"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "signature" }; }
         }

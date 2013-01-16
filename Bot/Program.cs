@@ -10,7 +10,8 @@ namespace Bot
     {
         static void Main(string[] args)
         {
-            Bot.Run("config");
+            Bot bot = new Bot("config");
+            bot.Run();
         }
     }
 }

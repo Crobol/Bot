@@ -7,8 +7,16 @@ using System.IO;
 
 namespace Bot.Core
 {
-    public class HttpHelper
+    /// <summary>
+    /// Helper functions for dealing with HTTP.
+    /// </summary>
+    public static class HttpHelper
     {
+        /// <summary>
+        /// Download HTML from specified URL.
+        /// </summary>
+        /// <param name="url">Url to download from.</param>
+        /// <returns>Returns string containing HTML on success.</returns>
         public static string GetFromUrl(string url)
         {
             WebClient webClient = new WebClient();

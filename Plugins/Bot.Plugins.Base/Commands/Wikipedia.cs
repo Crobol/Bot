@@ -27,19 +27,56 @@ namespace Bot.Commands
         public string Language { get; set; }
     }
 
+    class WikipediaResponse
+    {
+        public readonly string Title;
+        public readonly string Article;
+        public readonly bool Redirect;
+        public readonly string FullUrl;
+
+        /// <summary>
+        /// Construct WikipediaResponse from parameters.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="article"></param>
+        /// <param name="redirect"></param>
+        /// <param name="fullUrl"></param>
+        public WikipediaResponse(string title, string article, bool redirect, string fullUrl)
+        {
+            Title = title;
+            Article = article;
+            FullUrl = fullUrl;
+        }
+
+        /// <summary>
+        /// Construct WikipediaResponse by parsing attributes from XML.
+        /// </summary>
+        /// <param name="responseXml">XML to parse</param>
+        public WikipediaResponse(string responseXml)
+        {
+            System.IO.StringReader reader = new System.IO.StringReader(responseXml);
+            XElement root = XElement.Load(reader);
+
+            FullUrl = root.Descendants("page").First().Attribute("fullurl").Value;
+
+            string article = root.Descendants("page").Descendants("extract").FirstOrDefault().Value;
+            Article = article.Replace('\n', ' ');
+
+            Title = root.Descendants("page").First().Attribute("title").Value;
+        }
+    }
+
     [Export(typeof(ICommand))]
     class Wikipedia : AsyncCommand
     {
         private readonly ILog log = LogManager.GetLogger(typeof(Wikipedia));
 
-        private readonly string searchUrl = "http://en.wikipedia.org/w/api.php?action=opensearch&limit=3&search=test";
-
         // 0 = lang, 1 = title
-        private readonly string pageDataUrl = "https://{0}.wikipedia.org/w/api.php?action=query&prop=info|extracts&inprop=url&format=xml&exchars=400&explaintext&titles={1}";
+        private readonly string pageDataUrl = "https://{0}.wikipedia.org/w/api.php?action=query&prop=info|extracts&inprop=url&format=xml&exchars=400&explaintext&redirects&titles={1}";
 
         // TODO: Move command completed from AsyncCommand to Command to avoid this
         [ImportingConstructor]
-        public Wikipedia([Import("CommandCompletedEventHandler")] CommandCompletedEventHandler onCommandCompleted)
+        public Wikipedia([Import("CommandCompletedEventHandler")] Core.Commands.EventHandler onCommandCompleted)
         {
             this.CommandCompleted += onCommandCompleted;
         }
@@ -49,9 +86,9 @@ namespace Bot.Commands
             get { return "Wikipedia"; }
         }
 
-        public override string[] Aliases
+        public override IList<string> Aliases
         {
-            get { return new string[] { "wikipedia" }; }
+            get { return new List<string> { "wikipedia" }; }
         }
 
         public override string Help
@@ -79,21 +116,59 @@ namespace Bot.Commands
 
             if (!string.IsNullOrWhiteSpace(options.Query))
             {
-                string url = string.Format(pageDataUrl, options.Language, options.Query);
-                lines = GetResult(url);
+                lines = GetResponse(options);
             }
 
             if (!lines.Any())
                 lines.Add("No article found");
 
-            return new CommandCompletedEventArgs(e.Data.Channel, lines);
+            return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, lines);
         }
 
-        protected IList<string> GetResult(string url)
+        protected IList<string> GetResponse(WikipediaOptions options)
         {
-            IList<string> response = new List<string>();
+            WikipediaResponse response = null;
+            string query = options.Query;
+            /*do
+            {
+                string url = string.Format(pageDataUrl, options.Language, query);
+                string xml = HttpHelper.GetFromUrl(url);
+                try
+                {
+                    response = new WikipediaResponse(xml);
+                    if (response.Redirect)
+                        query = string.Join("", response.Article.SkipWhile(x => x != ' ')).Trim();
+                }
+                catch (Exception ex)
+                {
+                    log.Debug(ex);
+                    return new List<string>();
+                }                
+            } while (response.Redirect);*/
 
+            string url = string.Format(pageDataUrl, options.Language, query);
+            
             try
+            {
+                string xml = HttpHelper.GetFromUrl(url);
+                response = new WikipediaResponse(xml);
+            }
+            catch (Exception ex)
+            {
+                log.Debug(ex);
+            }   
+
+            if (!string.IsNullOrEmpty(response.Article))
+                return new List<string>() { "Wiki: " + response.Article, response.FullUrl };
+            else
+                return new List<string>();
+        }
+
+        protected string GetArticle(string url)
+        {
+            string article = null;
+
+            try // TODO: Remove try/catch?
             {
                 string xml = HttpHelper.GetFromUrl(url);
                 System.IO.StringReader reader = new System.IO.StringReader(xml);
@@ -102,27 +177,26 @@ namespace Bot.Commands
                 IEnumerable<XAttribute> attributes = root.Descendants("page").SelectMany(x => x.Attributes());
                 string pageUrl = (string)attributes.Where(x => x.Name == "fullurl").FirstOrDefault();
 
-                string extract = root.Descendants("page").Descendants("extract").FirstOrDefault().Value;
-                extract = extract.Replace('\n', ' ');
-
-                response.Add("Wiki: " + extract);
-                response.Add(pageUrl);
+                article = root.Descendants("page").Descendants("extract").FirstOrDefault().Value;
+                article = article.Replace('\n', ' ');
             }
             catch (Exception e)
             {
                 log.Error("Exception trying to fetch Wikipedia article", e);
             }
 
-            return response;
+            return article;
+        }
+
+        protected WikipediaResponse GetWikipediaResponse(string url)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Fetches first 500 characters from specified Wikipedia article URL.
         /// </summary>
-        /// <param name="irc"></param>
-        /// <param name="destinationChannel"></param>
-        /// <param name="subject"></param>
-        protected string FetchWikipedia(string url)
+        protected string ScrapeWikipediaUrl(string url)
         {
             try
             {

@@ -18,13 +18,13 @@ namespace Bot.Core
             return new string(a);
         }
 
-        public static string ByteArrayToString(this byte[] bytes)
+        public static string ByteArrayToString(this byte[] value)
         {
-            StringBuilder output = new StringBuilder();
+            var output = new StringBuilder();
 
-            for (int i = 0; i < bytes.Length; i++)
+            for (int i = 0; i < value.Length; i++)
             {
-                output.Append(bytes[i].ToString("x2"));
+                output.Append(value[i].ToString("x2"));
             }
 
             return output.ToString();
@@ -39,6 +39,29 @@ namespace Bot.Core
             }
             else
                 return s;
+        }
+
+        public static string[] SplitArguments(string commandLine)
+        {
+            var parmChars = commandLine.ToCharArray();
+            var inSingleQuote = false;
+            var inDoubleQuote = false;
+            for (var index = 0; index < parmChars.Length; index++)
+            {
+                if (parmChars[index] == '"' && !inSingleQuote)
+                {
+                    inDoubleQuote = !inDoubleQuote;
+                    parmChars[index] = '\n';
+                }
+                if (parmChars[index] == '\'' && !inDoubleQuote)
+                {
+                    inSingleQuote = !inSingleQuote;
+                    parmChars[index] = '\n';
+                }
+                if (!inSingleQuote && !inDoubleQuote && parmChars[index] == ' ')
+                    parmChars[index] = '\n';
+            }
+            return (new string(parmChars)).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

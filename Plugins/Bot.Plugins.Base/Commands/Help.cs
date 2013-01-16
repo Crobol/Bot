@@ -26,9 +26,9 @@ namespace Bot.Plugins.Base.Commands
             get { return "Help"; }
         }
 
-        public override string[] Aliases
+        public override IList<string> Aliases
         {
-            get { return new string[] { "help" }; }
+            get { return new List<string> { "help" }; }
         }
 
         public override string Help

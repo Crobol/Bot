@@ -9,7 +9,7 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
-    [Export(typeof(ICommand))]
+    /*[Export(typeof(ICommand))]
     class AddUser : Command
     {
         UserSystem userSystem;
@@ -25,7 +25,7 @@ namespace Bot.Commands
             get { return "Add User"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "au", "add-user" }; }
         }
@@ -84,7 +84,7 @@ namespace Bot.Commands
             get { return "Authenticate"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "authenticate", "login" }; }
         }
@@ -129,7 +129,7 @@ namespace Bot.Commands
             get { return "List Authenticated Users"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "lau", "list-authenticated-users" }; }
         }
@@ -151,5 +151,5 @@ namespace Bot.Commands
             }
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
         }
-    }
+    }*/
 }

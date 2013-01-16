@@ -9,7 +9,7 @@ namespace Bot.Core.Commands
     public interface ICommand
     {
         string Name { get; }
-        string[] Aliases { get; }
+        IList<string> Aliases { get; }
 
         string Help { get; }
         string Signature { get; }

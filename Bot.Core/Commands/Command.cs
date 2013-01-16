@@ -6,14 +6,14 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Core.Commands
 {
-    public delegate void CommandCompletedEventHandler(object sender, CommandCompletedEventArgs e);
+    public delegate void EventHandler(object sender, CommandCompletedEventArgs e);
 
     public abstract class Command : ICommand
     {
-        public event CommandCompletedEventHandler CommandCompleted;
+        public event EventHandler CommandCompleted;
 
         public abstract string Name { get; }
-        public virtual string[] Aliases { get { return null; } }
+        public virtual IList<string> Aliases { get { return null; } }
 
         public virtual string Help { get { return "No help message available for this command"; } }
         public virtual string Signature { get { return Aliases.Aggregate((o, x) => o += "|" + x) + " <params...>"; } }

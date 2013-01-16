@@ -9,9 +9,7 @@ namespace Bot.Core.Processors
 {
     public abstract class AsyncProcessor : Processor
     {
-        protected Object _lock = new Object();
-        protected int counter = 0;
-        protected long lastCompleted = 0;
+        private long counter = 0;
 
         protected abstract void Worker(IrcEventArgs e);
 
@@ -20,29 +18,19 @@ namespace Bot.Core.Processors
             WaitCallback callback = delegate {
                 Interlocked.Increment(ref counter);
                 Worker(e);
-                lock (_lock)
-                {
-                    counter--;
-                    lastCompleted = System.Diagnostics.Stopwatch.GetTimestamp();
-                }
+                Interlocked.Decrement(ref counter);
             };
             ThreadPool.QueueUserWorkItem(callback);
         }
 
         /// <summary>
-        /// Use to determine the proximity of invocations to the same processor
+        /// Used to determine if there are parallell calls of this command running. TODO: Reconsider
         /// </summary>
-        /// <param name="threshold">Last invocation completed threshold value</param>
-        /// <returns>True if there are multiple workers running in parallel or if the last worker completed under "threshold" ms ago</returns>
-        protected bool CloseCall(long threshold = 1000)
+        /// <returns>True if there are multiple calls running in parallel.</returns>
+        protected bool ParallelCalls()
         {
-            bool result = false;
-            lock (_lock)
-            {
-                if (counter > 1 || (System.Diagnostics.Stopwatch.GetTimestamp() - lastCompleted) < (System.Diagnostics.Stopwatch.Frequency / 1000 * threshold))
-                    result = true;
-            }
-            return result;
+            long c = Interlocked.Read(ref counter);
+            return c > 1;
         }
     }
 }

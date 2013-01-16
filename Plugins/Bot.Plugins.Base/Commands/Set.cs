@@ -26,7 +26,7 @@ namespace Bot.Commands
             get { return "Set"; }
         }
 
-        public override string[] Aliases
+        public override List<string> Aliases
         {
             get { return new string[] { "set" }; }
         }
