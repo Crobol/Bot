@@ -35,9 +35,6 @@
     <Reference Include="C5">
       <HintPath>..\packages\C5.2.1.4492.18142\lib\net40\C5.dll</HintPath>
     </Reference>
-    <Reference Include="CircularBuffer">
-      <HintPath>..\Libraries\CircularBuffer.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
