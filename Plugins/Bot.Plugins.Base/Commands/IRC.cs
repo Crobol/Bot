@@ -10,23 +10,13 @@ using Meebey.SmartIrc4net;
 namespace Bot.Commands
 {
     [Export(typeof(ICommand))]
+    [CommandAttributes("Say", "say")]
     class Say : Command
     {
-        public override string Name
+        public override IEnumerable<string> Execute(IrcEventArgs e)
         {
-            get { return "Say"; }
+            return new [] {e.Data.Message.Split(new char[] {' '}, 2).LastOrDefault()};
         }
-
-        public override IList<string> Aliases
-        {
-            get { return new List<string> { "say" }; }
-        }
-
-        public override void Execute(IrcEventArgs e)
-        {
-            string message = e.Data.Message.Split(new char[] {' '}, 2).LastOrDefault();
-            e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
-        } 
     }
 
     /*[Export(typeof(ICommand))]

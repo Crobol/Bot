@@ -67,17 +67,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AltCommands\AltNowPlaying.cs" />
-    <Compile Include="AltCommands\AltWikipedia.cs" />
+    <Compile Include="Commands\Help.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\NowPlaying.cs" />
+    <Compile Include="Commands\Wikipedia.cs" />
     <Compile Include="Commands\Calc.cs" />
     <Compile Include="Commands\Exchange.cs" />
-    <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\IRC.cs" />
     <Compile Include="Commands\UrbanDictionary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Commands\Tyda.cs" />
     <Compile Include="Processors\UrlTitles.cs" />
-    <Compile Include="Commands\UserServiceCommands.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Bot.Core\Bot.Core.csproj">
@@ -88,6 +89,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)Bot\bin\Release\Plugins" /y</PostBuildEvent>

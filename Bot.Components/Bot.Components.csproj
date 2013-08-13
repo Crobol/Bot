@@ -32,6 +32,9 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="C5">
+      <HintPath>..\packages\C5.2.1.4492.18142\lib\net40\C5.dll</HintPath>
+    </Reference>
     <Reference Include="CircularBuffer">
       <HintPath>..\Libraries\CircularBuffer.dll</HintPath>
     </Reference>
@@ -60,13 +63,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\AltCommandComponent.cs" />
-    <Compile Include="Components\CliComponent.cs" />
     <Compile Include="Components\CommandComponent.cs" />
+    <Compile Include="Components\CliComponent.cs" />
     <Compile Include="Components\IrcComponent.cs" />
     <Compile Include="Components\IronPythonComponent.cs" />
     <Compile Include="Components\ProcessorComponent.cs" />
     <Compile Include="Components\PythonComponent.cs" />
+    <Compile Include="Components\TaskComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,50 +3,28 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading;
 using Bot.Core;
 using Bot.Core.Commands;
 using HtmlAgilityPack;
 using Meebey.SmartIrc4net;
-using Nini.Config;
 using log4net;
 
-namespace Bot.Commands
+namespace Bot.Plugins.Base.Commands
 {
     [Export(typeof(ICommand))]
-    class NowPlaying : AsyncCommand
+    [CommandAttributes("Now Playing", true, "np", "nowplaying")]
+    public class NowPlaying : Command
     {
         private ILog log = LogManager.GetLogger(typeof(NowPlaying));
-
-        private UserSystem userSystem;
-
-        private const string SystemName = "np";
+        private IPersistentStore store;
 
         [ImportingConstructor]
-        public NowPlaying([Import("UserSystem")] UserSystem userSystem, [Import("CommandCompletedEventHandler")] Core.Commands.EventHandler onCommandCompleted)
+        public NowPlaying([Import("Store")] IPersistentStore store)
         {
-            this.CommandCompleted += onCommandCompleted;
-            this.userSystem = userSystem;
+            this.store = store;
         }
 
-        public override string Name
-        {
-            get { return "Now Playing"; }
-        }
-
-        public override IList<string> Aliases
-        {
-            get { return new List<string> { "np", "now-playing" }; }
-        }
-
-        public override string Help
-        {
-            get { return "Fetches now playing information from last.fm. You can save your last.fm username by setting \"" + Name + ".<nickname>\" or when logged in \"" + Name + ".username\". Parameters: [<username>]"; }
-        }
-
-        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
+        public override IEnumerable<string> Execute(IrcEventArgs e)
         {
             string nick = "";
             string message = "";
@@ -57,32 +35,24 @@ namespace Bot.Commands
             }
             else
             {
-                User user = userSystem.GetAuthenticatedUser(e.Data.From);
-
-                if (user != null)
-                    nick = userSystem.GetUserSetting(user.ID, SystemName + ".username");
-                else
-                    nick = userSystem.GetUserSetting(null, SystemName + "." + e.Data.Nick);
+                nick = store.GetUserSetting<string>(e.Data.Nick, "LastfmUsername");
 
                 if (string.IsNullOrWhiteSpace(nick))
                     nick = e.Data.Nick;
             }
 
-            if (!string.IsNullOrWhiteSpace(nick))
+            log.Info("Fetching now playing information for user \"" + nick + "\"");
+
+            try
             {
-                log.Info("Fetching now playing information for user \"" + nick + "\"");
                 message = FetchNowPlayingInfo(nick);
-                if (ParallelCalls())
-                    message += " -- " + e.Data.Nick;
             }
-            else
+            catch (Exception)
             {
-                log.Warn("No nick found or specified");
+                return new string[0];
             }
 
-            CommandCompletedEventArgs completedArgs = new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, new List<string> { message });
-
-            return completedArgs;
+            return new[] { message };
         }
 
         /// <summary>
@@ -91,43 +61,45 @@ namespace Bot.Commands
         /// <param name="lastfmUsername">Last.fm username to fetch from</param>
         protected string FetchNowPlayingInfo(string lastfmUsername)
         {
+            string html;
+
             try
             {
-                string html = HttpHelper.GetFromUrl("http://last.fm/user/" + lastfmUsername);
-
-                HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                HtmlNode subjectNode = doc.DocumentNode.SelectSingleNode("//table [@id = 'recentTracks']/descendant::td [contains(@class, 'subjectCell') and contains(@class, 'highlight')]");
-
-                if (subjectNode != null && !string.IsNullOrWhiteSpace(subjectNode.InnerText))
-                {
-                    string message = "np: " + subjectNode.InnerText.Trim();
-                    message = WebUtility.HtmlDecode(message);
-
-                    string[] trackInfo = subjectNode.InnerText.Trim().Split('–');
-                    html = HttpHelper.GetFromUrl("http://last.fm/music/" + trackInfo[0].Trim().Replace(' ', '+'));
-
-                    doc.LoadHtml(html);
-
-                    HtmlNode tagsNode = doc.DocumentNode.SelectSingleNode("//section [@class = 'global-tags']/ul/li/a");
-
-                    if (tagsNode != null && !string.IsNullOrWhiteSpace(tagsNode.InnerText))
-                    {
-                        message += " [" + tagsNode.InnerText.Trim() + "]";
-                    }
-
-                    return message;
-                }
-                else
-                    log.Warn("Could not find Now Playing information in last.fm user page");
+                html = HttpHelper.GetFromUrl("http://last.fm/user/" + lastfmUsername);
             }
             catch (Exception e)
             {
-                log.Warn("Could not get last.fm user page information", e);
+                log.Warn("Could not get last.fm user page HTML.", e);
+                throw;
             }
 
-            return "";
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            HtmlNode subjectNode = doc.DocumentNode.SelectSingleNode("//table [@id = 'recentTracks']/descendant::td [contains(@class, 'subjectCell') and contains(@class, 'highlight')]");
+
+            if (subjectNode == null || string.IsNullOrWhiteSpace(subjectNode.InnerText))
+            {
+                log.Warn("Could not find Now Playing information in last.fm user page HTML.");
+                throw new NullReferenceException();
+            }
+
+            string message = "np: " + subjectNode.InnerText.Trim();
+            message = WebUtility.HtmlDecode(message);
+
+            string[] trackInfo = subjectNode.InnerText.Trim().Split('–');
+            html = HttpHelper.GetFromUrl("http://last.fm/music/" + trackInfo[0].Trim().Replace(' ', '+'));
+
+            doc.LoadHtml(html);
+
+            HtmlNode tagsNode = doc.DocumentNode.SelectSingleNode("//section [@class = 'global-tags']/ul/li/a");
+
+            if (tagsNode != null && !string.IsNullOrWhiteSpace(tagsNode.InnerText))
+            {
+                message += " [" + tagsNode.InnerText.Trim() + "]";
+            }
+
+            return message;
         }
     }
 }

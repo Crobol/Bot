@@ -30,7 +30,8 @@ namespace Bot.Components
                 try
                 {
                     string name = string.Join("", Path.GetFileNameWithoutExtension(file));
-                    scripts.Add("!" + name, file);
+                    scripts.Add("!" + name.ToLower(), file);
+                    log.Info("Found script \"" + name + "\"");
                 }
                 catch (Exception e)
                 {

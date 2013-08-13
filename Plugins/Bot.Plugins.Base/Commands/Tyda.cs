@@ -24,28 +24,12 @@ namespace Bot.Commands
 
 
     [Export(typeof(ICommand))]
-    class Tyda : AsyncCommand
+    [CommandAttributes("Translate", true, "translate")]
+    class Tyda : Command
     {
         private ILog log = LogManager.GetLogger(typeof(Tyda));
 
-        // TODO: Move command completed from AsyncCommand to Command to avoid this
-        [ImportingConstructor]
-        public Tyda([Import("CommandCompletedEventHandler")] Core.Commands.EventHandler onCommandCompleted)
-        {
-            this.CommandCompleted += onCommandCompleted;
-        }
-
-        public override string Name
-        {
-            get { return "Translate"; }
-        }
-
-        public override IList<string> Aliases
-        {
-            get { return new List<string> { "translate" }; }
-        }
-
-        public override string Help
+        public string Help
         {
             get 
             {
@@ -53,7 +37,7 @@ namespace Bot.Commands
             }
         }
 
-        public override string Signature
+        public string Signature
         {
             get
             {
@@ -62,7 +46,7 @@ namespace Bot.Commands
             }
         }
 
-        protected override CommandCompletedEventArgs Worker(IrcEventArgs e)
+        public override IEnumerable<string> Execute(IrcEventArgs e)
         {
             string message;
             TydaOptions options = OptionParser.Parse<TydaOptions>(e.Data.Message);
@@ -107,10 +91,7 @@ namespace Bot.Commands
 			else
 				message = "No results found";
 
-            if (e.Data.Type == ReceiveType.QueryNotice)
-                return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Nick, new List<string> { message }, SendType.Notice);
-            else
-                return new CommandCompletedEventArgs(e.Data.Irc.Address, e.Data.Channel, new List<string> { message });
+            return new [] {message};
         }
     }
 }

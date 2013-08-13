@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Meebey.SmartIrc4net;
 
 namespace Bot.Core.Commands
@@ -9,11 +6,10 @@ namespace Bot.Core.Commands
     public interface ICommand
     {
         string Name { get; }
-        IList<string> Aliases { get; }
+        bool Async { get; }
+        string[] Aliases { get; }
+        string Description { get; }
 
-        string Help { get; }
-        string Signature { get; }
-
-        void Execute(IrcEventArgs e);
+        IEnumerable<string> Execute(IrcEventArgs e);
     }
 }

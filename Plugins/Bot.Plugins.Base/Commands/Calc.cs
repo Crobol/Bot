@@ -10,6 +10,7 @@ using LoreSoft.MathExpressions;
 namespace Bot.Plugins.Base.Commands
 {
     [Export(typeof(ICommand))]
+    [CommandAttributes("Calculator", "calculate")]
     class Calc : Command, IDisposable
     {
         private MathEvaluator eval = new MathEvaluator();
@@ -33,26 +34,16 @@ namespace Bot.Plugins.Base.Commands
                 eval = null;
                 disposed = true;
             }
-       }
-
-        public override string Name
-        {
-            get { return "Calc"; }
         }
 
-        public override IList<string> Aliases
-        {
-            get { return new List<string> { "calc" }; }
-        }
-
-        public override string Help
+        public string Help
         {
             get { return "Evaluates a mathematical expression. Parameters <expression>"; }
         }
 
-        public override void Execute(IrcEventArgs e)
+        public override IEnumerable<string> Execute(IrcEventArgs e)
         {
-            e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, eval.Evaluate(string.Join("", e.Data.MessageArray.Skip(1))).ToString());
+            return new [] { eval.Evaluate(string.Join("", e.Data.MessageArray.Skip(1))).ToString() };
         }
     }
 }

@@ -34,12 +34,12 @@ namespace Bot
             configSource = new IniConfigSource(configFilePath);
             IConfig config = configSource.Configs["global"];
 
-            store = new JsonPersistentStore("test.json");
+            store = new JsonPersistentStore("store.json");
 
-            components.Add(new CommandComponent(hub));
+            components.Add(new CommandComponent(hub, store));
             components.Add(new ProcessorComponent(hub, config));
             components.Add(new CliComponent(hub));
-            components.Add(new AltCommandComponent(hub, store));
+            components.Add(new TaskComponent(hub, store));
             //components.Add(new IronPythonComponent(hub));
             //components.Add(new PythonComponent(hub));
 

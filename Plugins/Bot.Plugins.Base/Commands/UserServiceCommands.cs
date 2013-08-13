@@ -9,7 +9,7 @@ using Meebey.SmartIrc4net;
 
 namespace Bot.Commands
 {
-    /*[Export(typeof(ICommand))]
+    [Export(typeof(ICommand))]
     class AddUser : Command
     {
         UserSystem userSystem;
@@ -151,5 +151,5 @@ namespace Bot.Commands
             }
             e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, message);
         }
-    }*/
+    }
 }

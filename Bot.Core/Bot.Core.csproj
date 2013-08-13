@@ -29,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DbLinq">
@@ -61,13 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttributeExtensions.cs" />
-    <Compile Include="Commands\AsyncCommand.cs" />
-    <Compile Include="Commands\CommandCompletedEventArgs.cs" />
-    <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\DefaultParam.cs" />
-    <Compile Include="Commands\IAltCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Commands\AltCommand.cs" />
+    <Compile Include="Commands\Command.cs" />
     <Compile Include="Component\Component.cs" />
     <Compile Include="Component\IComponent.cs" />
     <Compile Include="HttpHelper.cs" />

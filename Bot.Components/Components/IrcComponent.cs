@@ -8,7 +8,7 @@ using System.Threading;
 using Bot.Core;
 using Bot.Core.Component;
 using Bot.Core.Messages;
-using CircularBuffer;
+//using CircularBuffer;
 using log4net;
 using Nini.Config;
 using Meebey.SmartIrc4net;
@@ -25,7 +25,7 @@ namespace Bot.Components
         private string commandIdentifier = "!";
         private bool quit = false;
 
-        private Dictionary<string, CircularBuffer<string>> scrollback = new Dictionary<string, CircularBuffer<string>>();
+        private Dictionary<string, C5.CircularQueue<string>> scrollback = new Dictionary<string, C5.CircularQueue<string>>();
 
         public IrcComponent(ITinyMessengerHub hub, IConfig config) : base(hub)
         {
@@ -43,7 +43,7 @@ namespace Bot.Components
                 Console.WriteLine(config.GetString("channel-message-indicator", "   ") + ircs[message.server].Address + " -> " + message.channel + ": " + message.message);
 
             ircs[message.server].SendMessage(message.sendType, message.channel, message.message);
-            scrollback[message.server].Put(message.message);
+            scrollback[message.server].Enqueue(message.message);
         }
 
         private void OnChannelMessage(object sender, IrcEventArgs e)
@@ -52,7 +52,7 @@ namespace Bot.Components
                 Console.WriteLine(config.GetString("channel-message-indicator", "   ") + e.Data.Nick + " -> " + e.Data.Channel + ": " + e.Data.Message);
 
             ProcessIrcEvent(e);
-            scrollback[e.Data.Irc.Address].Put(e.Data.Message);
+            scrollback[e.Data.Irc.Address].Enqueue(e.Data.Message);
         }
 
         private void OnQueryMessage(object sender, IrcEventArgs e)
@@ -73,6 +73,15 @@ namespace Bot.Components
             OnQueryMessage(sender, e);
         }
 
+        private void OnDisconnected(object sender, EventArgs e)
+        {
+            var irc = sender as IrcClient;
+            if (irc != null)
+            {
+                log.InfoFormat("Disconnected from {0}", irc.Address);
+            }
+        }
+
         private void ProcessIrcEvent(IrcEventArgs e)
         {
             if (e.Data.Message.StartsWith(commandIdentifier + "version"))
@@ -85,11 +94,11 @@ namespace Bot.Components
             }
             else if (e.Data.Message.StartsWith(commandIdentifier) && !e.Data.Message.Equals(commandIdentifier))
             {
-                hub.Publish<InvokeCommandMessage>(new InvokeCommandMessage(this, e.Data.MessageArray[0], e));
+                hub.Publish(new InvokeCommandMessage(this, e.Data.MessageArray[0], e));
             }
             else
             {
-                hub.Publish<IrcMessage>(new IrcMessage(this, e));
+                hub.Publish(new IrcMessage(this, e));
             }
         }
 
@@ -117,13 +126,13 @@ namespace Bot.Components
             irc.UseSsl = server.UseSsl;
 
             // Bind event handlers
-            irc.OnChannelMessage += new IrcEventHandler(OnChannelMessage);
-            irc.OnQueryMessage += new IrcEventHandler(OnQueryMessage);
-            //irc.OnChannelNotice += new IrcEventHandler(OnChannelNotice);
-            irc.OnQueryNotice += new IrcEventHandler(OnQueryNotice);
+            irc.OnChannelMessage += OnChannelMessage;
+            irc.OnQueryMessage += OnQueryMessage;
+            irc.OnQueryNotice += OnQueryNotice;
+            irc.OnDisconnected += OnDisconnected;
 
             // Create scrollback buffer
-            scrollback[server.Host] = new CircularBuffer<string>(1000, true);
+            scrollback[server.Host] = new C5.CircularQueue<string>(1000);
 
             try
             {

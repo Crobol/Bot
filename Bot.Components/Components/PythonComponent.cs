@@ -6,12 +6,12 @@ using System.Text;
 using Bot.Core.Component;
 using Bot.Core.Messages;
 using log4net;
-//using Python.Runtime;
+using Python.Runtime;
 using TinyMessenger;
 
 namespace Bot.Components
 {
-    /*class PythonComponent : Component, IDisposable
+    public class PythonComponent : Component, IDisposable
     {
         private ILog log = LogManager.GetLogger(typeof(PythonComponent));
 
@@ -98,5 +98,5 @@ namespace Bot.Components
         }
 
         #endregion
-    }*/
+    }
 }
