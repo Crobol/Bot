@@ -66,7 +66,7 @@ namespace Bot.Plugins.Base.Commands
     public class WikiCommand : Command
     {
         private readonly ILog log = LogManager.GetLogger(typeof(WikiCommand));
-        private readonly string pageDataUrl = "https://{0}.wikipedia.org/w/api.php?action=query&prop=info|extracts&inprop=url&format=xml&exchars=400&explaintext&redirects&titles={1}";
+        private const string pageDataUrl = "https://{0}.wikipedia.org/w/api.php?action=query&prop=info|extracts&inprop=url&format=xml&exchars=400&explaintext&redirects&titles={1}";
 
         public override IEnumerable<string> Execute(IrcEventArgs e)
         {
