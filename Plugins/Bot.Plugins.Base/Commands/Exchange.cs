@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Bot.Core;
 using Bot.Core.Commands;
+using LoreSoft.MathExpressions;
 using log4net;
 using Meebey.SmartIrc4net;
 using Newtonsoft.Json.Linq;
@@ -14,7 +16,7 @@ namespace Bot.Commands
     {
         [OptionFullName("amount")]
         [DefaultOption]
-        public decimal Amount { get; set; }
+        public string Amount { get; set; }
         
         [OptionFullName("from")]
         [DefaultValue("USD")]
@@ -27,12 +29,15 @@ namespace Bot.Commands
 
     [Export(typeof(ICommand))]
     [CommandAttributes("Exchange", true, "exchange")]
-    class Exchange : Command
+    class Exchange : Command, IDisposable
     {
+        private MathEvaluator eval = new MathEvaluator();
+        private bool disposed = false;
         private readonly ILog log = LogManager.GetLogger(typeof(Exchange));
+        private readonly Regex letterFilter = new Regex(@"[A-Za-z]+");
 
         // 0 = amount, 1 = from, 2 = to
-        private readonly string url = "http://www.google.com/ig/calculator?hl=en&q={0}{1}=?{2}";
+        private const string url = "http://www.google.com/ig/calculator?hl=en&q={0}{1}=?{2}";
 
         public string Help
         {
@@ -56,7 +61,20 @@ namespace Bot.Commands
             {
                 ExchangeOptions options = OptionParser.ParseByOrder<ExchangeOptions>(e.Data.Message);
 
-                string query = string.Format(url, options.Amount, options.From, options.To);
+                double amount;
+                
+                var expression = string.Join("", e.Data.MessageArray.Where(x => !letterFilter.IsMatch(x)));
+
+                try
+                {
+                     amount = eval.Evaluate(expression);
+                }
+                catch
+                {
+                     amount = double.Parse(options.Amount);
+                }
+
+                string query = string.Format(url, amount, options.From, options.To);
                 string json = HttpHelper.GetFromUrl(query);
 
                 JObject o = JObject.Parse(json);
@@ -65,7 +83,7 @@ namespace Bot.Commands
                 string resultAmount = result.Split('.').FirstOrDefault();
 
                 if (!string.IsNullOrEmpty(resultAmount))
-                    lines.Add(options.Amount.ToString() + " " + options.From.ToUpper() + " = " + resultAmount + " " + options.To.ToUpper());
+                    lines.Add(amount.ToString() + " " + options.From.ToUpper() + " = " + resultAmount + " " + options.To.ToUpper());
             }
             catch (Exception ex)
             {
@@ -74,5 +92,29 @@ namespace Bot.Commands
 
             return  lines;
         }
+
+        #region IDispose implementation
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing && eval != null)
+                {
+                    eval.Dispose();
+                }
+
+                eval = null;
+                disposed = true;
+            }
+        }
+
+        #endregion
     }
 }

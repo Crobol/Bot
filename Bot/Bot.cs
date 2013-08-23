@@ -38,8 +38,8 @@ namespace Bot
 
             components.Add(new CommandComponent(hub, store));
             components.Add(new ProcessorComponent(hub, config));
-            components.Add(new CliComponent(hub));
-            components.Add(new TaskComponent(hub, store));
+            //components.Add(new CliComponent(hub));
+            //components.Add(new TaskComponent(hub, store));
             //components.Add(new IronPythonComponent(hub));
             //components.Add(new PythonComponent(hub));
 
