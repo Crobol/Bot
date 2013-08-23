@@ -59,14 +59,14 @@ namespace Bot.Components
                 if (command.Aliases != null)
                 {
                     foreach (string alias in command.Aliases)
-                        commands["!" + alias] = command;
+                        commands[alias] = command;
                 }
             }
         }
 
         private void OnBotCommandMessage(InvokeCommandMessage message)
         {
-            string commandName = message.Command.ToLower();
+            string commandName = message.Command;
             if (!commands.ContainsKey(commandName))
             {
                 var matches = commands.Keys.Where(x => x.StartsWith(commandName)).ToList();

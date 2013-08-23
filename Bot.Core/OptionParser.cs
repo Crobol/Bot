@@ -87,13 +87,13 @@ namespace Bot.Core
     /// </summary>
     public static class OptionParser
     {
-        private static Regex defaultRegex = new Regex(@"^![A-Za-z0-9-]+( -\w{1}(?: [A-Za-z0-9]*| ""[A-Za-z0-9\s]+"")?| --[A-Za-z-]+(?: [A-Za-z0-9]*| ""[A-Za-z0-9\s]+"")?)* ([^\W]+.+)$");
+        private static Regex defaultRegex = new Regex(@"^[A-Za-z0-9-!.]+( -\w{1}(?: [A-Za-z0-9]*| ""[A-Za-z0-9\s]+"")?| --[A-Za-z-]+(?: [A-Za-z0-9]*| ""[A-Za-z0-9\s]+"")?)* ([^\W]+.+)$");
 
         public static T MonoParse<T>(string s) where T : new()
         {
             if (s == null)
                 throw new ArgumentNullException("Parameter \"s\" cannot be null.");
-            if (s.StartsWith("!")) // TODO: Do not hardcode "!"
+            if (s.StartsWith("!") || s.StartsWith(".")) // TODO: Do not hardcode "!"
                 s = s.Substring(s.IndexOf(' '));
 
             var t = new T();

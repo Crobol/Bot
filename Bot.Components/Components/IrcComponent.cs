@@ -20,9 +20,9 @@ namespace Bot.Components
     {
         private readonly ILog log = LogManager.GetLogger(typeof(IrcComponent));
 
-        private IDictionary<string, IrcClient> ircs = new Dictionary<string, IrcClient>();
-        private IConfig config;
-        private string commandIdentifier = "!";
+        private readonly IDictionary<string, IrcClient> ircs = new Dictionary<string, IrcClient>();
+        private readonly IConfig config;
+        private const string commandIdentifiers = "!.";
         private bool quit = false;
 
         private Dictionary<string, C5.CircularQueue<string>> scrollback = new Dictionary<string, C5.CircularQueue<string>>();
@@ -84,17 +84,17 @@ namespace Bot.Components
 
         private void ProcessIrcEvent(IrcEventArgs e)
         {
-            if (e.Data.Message.StartsWith(commandIdentifier + "version"))
+            if (e.Data.Message.StartsWith(commandIdentifiers + "version"))
             {
-                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "0.2.0");
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "0.3.0");
             }
-            else if (e.Data.Message.StartsWith(commandIdentifier + "quit") && e.Data.Nick == "wqz" && e.Data.Host == "wan-ip")
+            else if (e.Data.Message.StartsWith(commandIdentifiers + "quit") && e.Data.Nick == "wqz" && e.Data.Host == "wan-ip") // TODO: Fulhack
             {
                 quit = true;
             }
-            else if (e.Data.Message.StartsWith(commandIdentifier) && !e.Data.Message.Equals(commandIdentifier))
+            else if (IsCommand(e.Data.Message))
             {
-                hub.Publish(new InvokeCommandMessage(this, e.Data.MessageArray[0], e));
+                hub.Publish(new InvokeCommandMessage(this, e.Data.MessageArray[0].Substring(1).ToLower(), e));
             }
             else
             {
@@ -187,6 +187,12 @@ namespace Bot.Components
         {
             System.Console.WriteLine("Exiting...");
             System.Environment.Exit(0);
+        }
+
+        private bool IsCommand(string message)
+        {
+            return commandIdentifiers.Any(identifier => message.StartsWith(identifier.ToString())) &&
+                   !commandIdentifiers.Any(identifier => message.Equals(identifier.ToString()));
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Bot.Core
 
         public void SetUserSetting<T>(string ident, string setting, T value)
         {
-            
+            throw new NotImplementedException();
         }
     }
 
