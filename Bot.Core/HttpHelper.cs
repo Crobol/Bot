@@ -13,7 +13,7 @@ namespace Bot.Core
     public static class HttpHelper
     {
         /// <summary>
-        /// Download HTML from specified URL.
+        /// GET HTML from specified URL.
         /// </summary>
         /// <param name="url">Url to download from.</param>
         /// <returns>Returns string containing HTML on success.</returns>

@@ -46,34 +46,4 @@ namespace Bot.Core.Messages
             this.ircEventArgs = ircEventArgs;
         }
     }
-
-    /*public class AuthenticateUserMessage
-    {
-        public string username;
-        public string password;
-        public string nick;
-        public string ident;
-
-        public AuthenticateUserMessage(string username, string password, string nick, string ident)
-        {
-            this.username = username;
-            this.password = password;
-            this.nick = nick;
-            this.ident = ident;
-        }
-    }
-
-    public class AuthenticatedInvokeMessage
-    {
-        public delegate void AuthenticatedInvoke();
-
-        public string ident;
-        public AuthenticatedInvoke function;
-
-        public AuthenticatedInvokeMessage(string ident, AuthenticatedInvoke function)
-        {
-            this.ident = ident;
-            this.function = function;
-        }
-    }*/
 }
