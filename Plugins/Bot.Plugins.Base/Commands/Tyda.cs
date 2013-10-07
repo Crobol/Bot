@@ -51,9 +51,12 @@ namespace Bot.Commands
             string message;
             TydaOptions options = OptionParser.Parse<TydaOptions>(e.Data.Message);
 
-            string url = "http://tyda.se/search?form=1&w=" + options.Query; // TODO: URL encode
-            if (!string.IsNullOrEmpty(options.Language))
-                url += "&w_lang=" + options.Language;
+            string oldUrl = "http://tyda.se/search?form=1&w=" + options.Query; // TODO: URL encode
+            string url = "http://tyda.se/search/" + options.Query;
+            if (options.Language == "sv")
+                url += "&lang[0]=" + options.Language + "&lang[1]=en";
+            else if (options.Language == "en")
+                url += "&lang[0]=" + options.Language + "&lang[1]=sv";
 
             string html;
 
@@ -70,7 +73,7 @@ namespace Bot.Commands
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            HtmlNodeCollection foundNodes = doc.DocumentNode.SelectNodes("//div [@class = 'tyda_content']/descendant::table [@class = 'tyda_res_body']/descendant::table [starts-with(@class, 'tyda_res_body_trans')]/descendant::a [starts-with(@id, 'tyda_trans')]");
+            HtmlNodeCollection foundNodes = doc.DocumentNode.SelectNodes("//div [@class = 'box box-searchresult']/descendant::div [@class = 'capsulated-content']/descendant::ul [@class = 'list list-translations']/child::li [@class = 'item']/child::a");
 
             if (foundNodes != null && foundNodes.Count > 0)
             {

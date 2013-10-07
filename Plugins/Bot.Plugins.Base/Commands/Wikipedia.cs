@@ -62,7 +62,7 @@ namespace Bot.Plugins.Base.Commands
     }
 
     [Export(typeof(ICommand))]
-    [CommandAttributes("Wikipedia", true, "wikipedia")]
+    [CommandAttributes("Wikipedia", true, "w", "wikipedia")]
     public class WikiCommand : Command
     {
         private readonly ILog log = LogManager.GetLogger(typeof(WikiCommand));

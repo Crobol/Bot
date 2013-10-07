@@ -11,7 +11,7 @@ using Bot.Core.Commands;
 namespace Bot.Plugins.Base.Commands
 {
     [Export(typeof(ICommand))]
-    [CommandAttributes("Urban Dictionary", true, "ud", "urbandictionary")]
+    [CommandAttributes("Urban Dictionary", true, "u", "ud", "urbandictionary")]
     class UrbanDictionary : Command
     {
         public override IEnumerable<string> Execute(IrcEventArgs e)
@@ -30,11 +30,18 @@ namespace Bot.Plugins.Base.Commands
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
-            HtmlNode node = doc.DocumentNode.SelectSingleNode("//table [@id = 'entries']/descendant::td [starts-with(@id, 'entry_')]/div [@class = 'definition']");
+            HtmlNode node = doc.DocumentNode.SelectSingleNode("//div [@id = 'entries']/descendant::div [starts-with(@id, 'entry_')]/div [@class = 'definition']");
             
             IList<string> lines = new List<string>();
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
-                lines.Add(("UrbanDictionary: " + WebUtility.HtmlDecode(node.InnerText)).FormatToIrc());
+            {
+                var definition = node.InnerHtml
+                    .Replace("<br>", " ")
+                    .Replace("<br/>", " ")
+                    .Replace("</br>", "");
+
+                lines.Add(("UrbanDictionary: " + WebUtility.HtmlDecode(definition)).FormatToIrc());
+            }
             else
                 lines.Add("No results found");
 

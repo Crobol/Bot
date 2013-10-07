@@ -12,7 +12,7 @@ using log4net;
 namespace Bot.Plugins.Base.Commands
 {
     [Export(typeof(ICommand))]
-    [CommandAttributes("Now Playing", true, "np", "nowplaying")]
+    [CommandAttributes("Now Playing", true, "n", "np", "nowplaying")]
     public class NowPlaying : Command
     {
         private ILog log = LogManager.GetLogger(typeof(NowPlaying));
