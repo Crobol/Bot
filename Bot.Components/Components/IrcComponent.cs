@@ -86,13 +86,13 @@ namespace Bot.Components
         {
             if (e.Data.Message.StartsWith(commandIdentifiers + "version"))
             {
-                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "0.3.0");
+                e.Data.Irc.SendMessage(SendType.Message, e.Data.Channel, "0.4.0");
             }
             else if (e.Data.Message.StartsWith(commandIdentifiers + "quit") && e.Data.Nick == "wqz" && e.Data.Host == "wan-ip") // TODO: Fulhack
             {
                 quit = true;
             }
-            else if (IsCommand(e.Data.Message))
+            else if (IsCommand(e.Data.MessageArray))
             {
                 hub.Publish(new InvokeCommandMessage(this, e.Data.MessageArray[0].Substring(1).ToLower(), e));
             }
@@ -189,10 +189,10 @@ namespace Bot.Components
             System.Environment.Exit(0);
         }
 
-        private bool IsCommand(string message)
+        private bool IsCommand(string[] messageArray)
         {
-            return commandIdentifiers.Any(identifier => message.StartsWith(identifier.ToString())) &&
-                   !commandIdentifiers.Any(identifier => message.Equals(identifier.ToString()));
+            return commandIdentifiers.Any(identifier => messageArray[0].StartsWith(identifier.ToString())) &&
+                   !commandIdentifiers.Any(identifier => messageArray[0].Equals(identifier.ToString()));
         }
     }
 }

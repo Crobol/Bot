@@ -67,17 +67,13 @@
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DbLinq, Version=0.20.0.0, Culture=neutral, PublicKeyToken=61e015a67077348b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Libraries\DbLinq.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+    <Reference Include="log4net, Version=1.2.12.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+      <HintPath>..\..\packages\log4net.2.0.2\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="LoreSoft.MathExpressions">
       <HintPath>..\..\Libraries\LoreSoft.MathExpressions.dll</HintPath>
@@ -106,13 +102,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Define.cs" />
+    <Compile Include="Commands\GenerateArchiveLink.cs" />
     <Compile Include="Commands\Help.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\NowPlaying.cs" />
     <Compile Include="Commands\Wikipedia.cs" />
     <Compile Include="Commands\Calc.cs" />
-    <Compile Include="Commands\Exchange.cs" />
     <Compile Include="Commands\IRC.cs" />
     <Compile Include="Commands\UrbanDictionary.cs" />
     <Compile Include="Commands\Wolfram.cs" />
@@ -128,7 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="README.textile" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

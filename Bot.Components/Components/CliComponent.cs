@@ -10,6 +10,8 @@ using TinyMessenger;
 
 namespace Bot.Components
 {
+    // TODO: Register scripts as ScriptCommand (or maybe PythonCommand) : ICommand which points to the script and invokes it through command line? And instead use specialized CommandLoaders (PythonScriptLoader, PluginLoader etc)
+
     public class CliComponent : Component
     {
         private readonly ILog log = LogManager.GetLogger(typeof(CliComponent));
@@ -30,7 +32,7 @@ namespace Bot.Components
                 try
                 {
                     string name = string.Join("", Path.GetFileNameWithoutExtension(file));
-                    scripts.Add("!" + name.ToLower(), file);
+                    scripts.Add(name.ToLower(), file);
                     log.Info("Found script \"" + name + "\"");
                 }
                 catch (Exception e)
@@ -42,22 +44,43 @@ namespace Bot.Components
 
         private void OnBotCommandMessage(InvokeCommandMessage message)
         {
-            if (message.IrcEventArgs.Data.MessageArray.Length == 1) // TODO: Fix this
-                return;
-
-            string args = string.Join(" ", message.IrcEventArgs.Data.MessageArray.Skip(1));
-
-            if (scripts.ContainsKey(message.Command))
+            string commandName = message.Command;
+            if (!scripts.ContainsKey(commandName))
             {
+                var matches = scripts.Keys.Where(x => x.StartsWith(commandName)).ToList();
+                if (matches.Any())
+                {
+                    commandName = matches.First();
+                }
+                else
+                {
+                    log.Debug("Command not found");
+                    return;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(commandName) && scripts.ContainsKey(commandName))
+            {
+                 string args = "";
+
+                if (message.IrcEventArgs.Data.MessageArray.Length > 1)
+                    args = string.Join(" ", message.IrcEventArgs.Data.MessageArray.Skip(1));
+
+                args = args.Replace("\'", "");
+                args = args.Replace(">", "");
+                args = args.Replace("<", "");
+                args = args.Replace("|", "");
+
                 try
                 {
                     var proc = new System.Diagnostics.Process();
                     proc.EnableRaisingEvents = false;
                     proc.StartInfo.FileName = @"python";
-                    proc.StartInfo.Arguments = scripts[message.Command] + " " + args;
+                    proc.StartInfo.Arguments = scripts[message.Command] + " \"" + args + "\"";
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
                     proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.StandardOutputEncoding = Encoding.UTF8;
                     proc.Start();
                     string data = proc.StandardOutput.ReadToEnd();
                     proc.WaitForExit();
@@ -69,6 +92,11 @@ namespace Bot.Components
                     log.Debug(ex);
                 }
             }
+        }
+
+        private void Reload()
+        {
+            throw new NotImplementedException();
         }
     }
 }

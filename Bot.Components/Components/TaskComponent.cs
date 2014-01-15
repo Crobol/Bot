@@ -6,29 +6,60 @@ using System.Text.RegularExpressions;
 using System.Timers;
 using Bot.Core;
 using Bot.Core.Messages;
+using Chronic;
 using log4net;
 using Meebey.SmartIrc4net;
 using TinyMessenger;
 
 namespace Bot.Components
 {
-    internal class Task
+    internal class Reminder : IDisposable
     {
         public string TargetServer { get; set; }
         public string Target { get; set; }
-        public DateTime Time { get; set; }
+        public string Creator { get; set; }
+        public DateTime When { get; set; }
+        public Timer Timer { get; set; }
         public string Message { get; set; }
+
+        private bool disposed = false;
+
+        #region Implement IDisposable
+
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing && Timer != null)
+                {
+                    Timer.Close();
+                    Timer.Dispose();
+                }
+
+                Timer = null;
+                disposed = true;
+            }
+        }
+
+        #endregion
     }
 
-    internal class TaskTimeComparer : IComparer<Task>
+    internal class TaskTimeComparer : IComparer<Reminder>
     {
-        public int Compare(Task a, Task b)
+        public int Compare(Reminder a, Reminder b)
         {
-            if (a.Time > b.Time)
+            if (a.When > b.When)
             {
                 return 1;
             }
-            else if (a.Time < b.Time)
+            else if (a.When < b.When)
             {
                 return -1;
             }
@@ -42,26 +73,29 @@ namespace Bot.Components
     public class TaskComponent : Core.Component.Component
     {
         private readonly ILog log = LogManager.GetLogger(typeof(TaskComponent));
-        private readonly C5.IPriorityQueue<Task> tasks = new C5.IntervalHeap<Task>(10, new TaskTimeComparer());
+        private readonly C5.IPriorityQueue<Reminder> tasks = new C5.IntervalHeap<Reminder>(10, new TaskTimeComparer());
         private readonly Timer timer = new Timer();
 
         public TaskComponent(ITinyMessengerHub hub, IPersistentStore store)
             : base(hub)
         {
             hub.Subscribe<InvokeCommandMessage>(this.HandleCommandMessage);
+
+            timer.AutoReset = false;
+            timer.Elapsed += OnTime;
         }
 
         private void HandleCommandMessage(InvokeCommandMessage message)
         {
-            if (message.Command.ToLower() == "!r" && message.IrcEventArgs.Data.MessageArray.Length > 2)
+            if (message.Command.ToLower() == "r" && message.IrcEventArgs.Data.MessageArray.Length > 2)
             {
-                string when = message.IrcEventArgs.Data.MessageArray[1];
-                string taskMessage = string.Join(" ", message.IrcEventArgs.Data.MessageArray.Skip(2));
+                string taskMessage = GetDescription(message.IrcEventArgs.Data.Message); //string.Join(" ", message.IrcEventArgs.Data.MessageArray.Skip(2));
 
-                DateTime dateTime;
+                DateTime when;
                 try
                 {
-                    dateTime = ParseDateTime(when);
+                    var line = message.IrcEventArgs.Data.Message;
+                    when = ParseDateTime(line.Substring(line.LastIndexOf('@') + 1, line.Length - line.LastIndexOf('@') - 1));
                 }
                 catch (Exception e)
                 {
@@ -69,17 +103,27 @@ namespace Bot.Components
                     return;
                 }
 
-                var task = new Task()
+                var timer = new Timer {AutoReset = false};
+                timer.Elapsed += OnTime;
+                if (when < DateTime.Now)
+                    timer.Interval = 1;
+                else
+                    timer.Interval = (when - DateTime.Now).TotalMilliseconds;
+
+                var task = new Reminder()
                     {
                         Message = taskMessage,
                         Target = message.IrcEventArgs.Data.Channel,
+                        Creator = message.IrcEventArgs.Data.Nick,
                         TargetServer = message.IrcEventArgs.Data.Irc.Address,
-                        Time = dateTime
+                        When = when,
+                        Timer = timer
                     };
 
                 tasks.Add(task);
+                task.Timer.Start();
 
-                SetTimer(tasks.Min().Time);
+                hub.Publish(new IrcSendMessage(this, SendType.Message, task.TargetServer, message.IrcEventArgs.Data.Channel, "Okidok!"));
             }
         }
 
@@ -95,61 +139,33 @@ namespace Bot.Components
 
             hub.Publish(new IrcSendMessage(this, SendType.Message, task.TargetServer, task.Target, "Reminder: " + task.Message));
 
-            timer.Stop();
-
-            if (tasks.Any())
-            {
-                var time = tasks.Min(x => x.Time);
-
-                SetTimer(time);
-            }
+            task.Dispose();
         }
 
         private void SetTimer(DateTime time)
         {
-            if (timer.Enabled)
-                timer.Stop();
+            timer.Stop();
 
-            timer.Interval = (time - DateTime.Now).TotalMilliseconds;
-            timer.Elapsed += OnTime;
+            if (time < DateTime.Now)
+                timer.Interval = 1;
+            else
+                timer.Interval = (time - DateTime.Now).TotalMilliseconds;
+
             timer.Start();
         }
 
-        private Regex dateTimeFormat = new Regex(@"(\d{4})");
-
         private DateTime ParseDateTime(string s)
         {
-            var dateTime = DateTime.ParseExact(s, "yyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat);
+            Parser parser = new Parser();
+            return parser.Parse(s).ToTime();
+        }
 
-            return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, 0);
+        private string GetDescription(string line)
+        {
+            if (string.IsNullOrEmpty(line) || !line.Contains("@"))
+                throw new FormatException("Invalid reminder string format");
 
-            /*var match = dateTimeFormat.Match(s);
-
-            if (match.Success && match.Groups.Count > 1)
-            {
-                DateTime ymd;
-                string hourMinutes;
-
-                if (match.Groups.Count == 3)
-                {
-                    var yearMonthDay = match.Groups[1].Value + "0000";
-                    ymd = DateTime.ParseExact(yearMonthDay, "yyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat);
-
-                    hourMinutes = match.Groups[2].Value;
-                }
-                else
-                {
-                    ymd = DateTime.Now;
-                    hourMinutes = "010101" + match.Groups[0].Value;
-                }
-                var hm = DateTime.ParseExact(hourMinutes, "yyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat);
-
-                return new DateTime(ymd.Year, ymd.Month, ymd.Day, hm.Hour, hm.Minute, 0);
-            }
-            else
-            {
-                throw new FormatException("Invalid date time format");
-            }*/
+            return line.Substring(line.IndexOf(' '), line.LastIndexOf('@') - line.IndexOf(' ')).Trim();
         }
     }
 }

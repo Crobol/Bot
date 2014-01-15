@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.SQLite;
 using System.Linq;
+using System.Net;
 using System.Text;
+using Bot.Components.Components;
 using Bot.Core;
 using Bot.Core.Component;
 using Bot.Components;
@@ -19,17 +20,19 @@ namespace Bot
     {
         private readonly ILog log = LogManager.GetLogger(typeof(Bot));
 
-        private List<Component> components = new List<Component>();
-        private IrcComponent irc;
+        private readonly List<Component> components = new List<Component>();
+        private readonly IrcComponent irc;
         private readonly ITinyMessengerHub hub = new TinyMessengerHub();
         private readonly IConfigSource configSource;
         private readonly IPersistentStore store;
 
         public Bot(string configFilePath)
         {
+            BasicConfigurator.Configure();
+            
             log.Info("Initalizing bot...");
 
-            BasicConfigurator.Configure();
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
             configSource = new IniConfigSource(configFilePath);
             IConfig config = configSource.Configs["global"];
@@ -38,10 +41,9 @@ namespace Bot
 
             components.Add(new CommandComponent(hub, store));
             components.Add(new ProcessorComponent(hub, config));
-            //components.Add(new CliComponent(hub));
-            //components.Add(new TaskComponent(hub, store));
-            //components.Add(new IronPythonComponent(hub));
-            //components.Add(new PythonComponent(hub));
+            components.Add(new CliComponent(hub));
+            components.Add(new TaskComponent(hub, store));
+            components.Add(new ClojureComponent(hub));
 
             irc = new IrcComponent(hub, config);
             components.Add(irc);

@@ -14,6 +14,19 @@ namespace Bot.Plugins.Base.Commands
     class Calc : Command, IDisposable
     {
         private MathEvaluator eval = new MathEvaluator();
+        
+        public string Help
+        {
+            get { return "Evaluates a mathematical expression. Parameters <expression>"; }
+        }
+
+        public override IEnumerable<string> Execute(IrcEventArgs e)
+        {
+            return new [] { eval.Evaluate(string.Join("", e.Data.MessageArray.Skip(1))).ToString() };
+        }
+
+        #region IDisposable implementation
+
         private bool disposed = false;
 
         public void Dispose()
@@ -36,14 +49,6 @@ namespace Bot.Plugins.Base.Commands
             }
         }
 
-        public string Help
-        {
-            get { return "Evaluates a mathematical expression. Parameters <expression>"; }
-        }
-
-        public override IEnumerable<string> Execute(IrcEventArgs e)
-        {
-            return new [] { eval.Evaluate(string.Join("", e.Data.MessageArray.Skip(1))).ToString() };
-        }
+        #endregion
     }
 }

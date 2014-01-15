@@ -33,6 +33,11 @@ namespace Bot.Components
         public CommandComponent(ITinyMessengerHub hub, IPersistentStore store)
             : base(hub)
         {
+            if (hub == null)
+                throw new ArgumentNullException("hub");
+            
+            log.Info("Initializing Command component...");
+
             this.store = store;
 
             hub.Subscribe<InvokeCommandMessage>(this.OnBotCommandMessage);
@@ -111,7 +116,7 @@ namespace Bot.Components
                 IEnumerable<string> response = commands[commandName].Execute(message.IrcEventArgs);
                 log.DebugFormat("Synchronous execution of \"{0}\" complete. Sending response...", message.Command);
 
-                if (response.Any())
+                if (response != null && response.Any())
                     SendIrcResponse(message, response);
             }
         }
@@ -126,7 +131,7 @@ namespace Bot.Components
 
             log.DebugFormat("Asynchronous execution of \"{0}\" complete. Sending response...", message.Command);
 
-            if (response.Any())
+            if (response != null && response.Any())
                 SendIrcResponse(message, response);
         }
 
@@ -144,6 +149,11 @@ namespace Bot.Components
             {
                 hub.Publish(new IrcSendMessage(this, sendType, address, channel, line.Trim()));
             }
+        }
+
+        private void Reload()
+        {
+            throw new NotImplementedException();
         }
     }
 }

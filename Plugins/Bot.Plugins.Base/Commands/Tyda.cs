@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
@@ -54,9 +55,9 @@ namespace Bot.Commands
             string oldUrl = "http://tyda.se/search?form=1&w=" + options.Query; // TODO: URL encode
             string url = "http://tyda.se/search/" + options.Query;
             if (options.Language == "sv")
-                url += "&lang[0]=" + options.Language + "&lang[1]=en";
+                url += "?lang[0]=" + options.Language + "&lang[1]=en";
             else if (options.Language == "en")
-                url += "&lang[0]=" + options.Language + "&lang[1]=sv";
+                url += "?lang[0]=" + options.Language + "&lang[1]=sv";
 
             string html;
 
@@ -67,7 +68,7 @@ namespace Bot.Commands
             catch (Exception ex)
             {
                 log.Error("Could not download HTML from URL: " + url, ex);
-                return null;
+                return new [] {"Service unavailable or invalid response"};
             }
 
             HtmlDocument doc = new HtmlDocument();
