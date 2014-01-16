@@ -30,7 +30,7 @@ namespace Bot.Plugins.Base.Commands
 
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
-            HtmlNode node = doc.DocumentNode.SelectSingleNode("//div [@id = 'entries']/descendant::div [starts-with(@id, 'entry_')]/div [@class = 'definition']");
+            HtmlNode node = doc.DocumentNode.SelectSingleNode("//div [@id = 'entries']/div [@class = 'box'][1]/descendant::div [@class = 'definition']");
             
             IList<string> lines = new List<string>();
             if (node != null && !string.IsNullOrWhiteSpace(node.InnerText))
@@ -38,7 +38,9 @@ namespace Bot.Plugins.Base.Commands
                 var definition = node.InnerHtml
                     .Replace("<br>", " ")
                     .Replace("<br/>", " ")
-                    .Replace("</br>", "");
+                    .Replace("</br>", "")
+                    .Replace("\n", "")
+                    .Trim();
 
                 lines.Add(("UrbanDictionary: " + WebUtility.HtmlDecode(definition)).FormatToIrc());
             }

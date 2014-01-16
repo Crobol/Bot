@@ -76,7 +76,7 @@ namespace Bot.Components
                     var proc = new System.Diagnostics.Process();
                     proc.EnableRaisingEvents = false;
                     proc.StartInfo.FileName = @"python";
-                    proc.StartInfo.Arguments = scripts[message.Command] + " \"" + args + "\"";
+                    proc.StartInfo.Arguments = scripts[commandName] + " \"" + args + "\"";
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
                     proc.StartInfo.UseShellExecute = false;
