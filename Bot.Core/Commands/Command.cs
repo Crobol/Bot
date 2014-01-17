@@ -54,10 +54,10 @@ namespace Bot.Core.Commands
 
     public abstract class Command : ICommand
     {
-        private readonly string name;
-        private readonly bool async;
-        private readonly string[] aliases;
-        private readonly string description;
+        protected readonly string name;
+        protected readonly bool async;
+        protected readonly string[] aliases;
+        protected readonly string description;
 
         public string Name { get { return name; } }
         public bool Async { get { return async; } }

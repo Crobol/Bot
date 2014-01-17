@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Remoting.Messaging;
@@ -22,10 +23,11 @@ namespace Bot.Components
     {
         protected delegate IEnumerable<string> Execute(IrcEventArgs e);
 
-        private readonly ILog log = LogManager.GetLogger(typeof(CommandComponent));
+        private readonly ILog log = LogManager.GetLogger(typeof (CommandComponent));
 
         [ImportMany]
-        private IEnumerable<ICommand> Commands { get; set; }
+        private IList<ICommand> Commands { get; set; }
+
         private readonly IDictionary<string, ICommand> commands = new Dictionary<string, ICommand>();
 
         private readonly IPersistentStore store;
@@ -35,25 +37,61 @@ namespace Bot.Components
         {
             if (hub == null)
                 throw new ArgumentNullException("hub");
-            
+
             log.Info("Initializing Command component...");
 
             this.store = store;
 
             hub.Subscribe<InvokeCommandMessage>(this.OnBotCommandMessage);
 
+            Commands = new List<ICommand>();
+
+            LoadCommands();
+
+            RegisterCommands();
+        }
+
+        private void LoadCommands()
+        {
+            if (Commands != null)
+                Commands.Clear();
+
+            if (commands != null)
+                commands.Clear();
+
             using (var catalog = new DirectoryCatalog("Plugins"))
             {
+                log.Info("Loading plugins...");
                 var container = new CompositionContainer(catalog);
                 container.ComposeExportedValue("Store", store);
                 container.ComposeExportedValue("Commands", commands);
                 container.ComposeParts(this);
             }
 
+            log.Info("Registering Python scripts...");
+
+            string[] files = Directory.GetFiles("Scripts", "*.py");
+            foreach (string file in files)
+            {
+                try
+                {
+                    string name = string.Join("", Path.GetFileNameWithoutExtension(file));
+                    log.Info("Found script \"" + name + "\"");
+
+                    var scriptCommand = new PythonScriptCommand(file, name, true, name.ToLower());
+
+                    Commands.Add(scriptCommand);
+                }
+                catch (Exception e)
+                {
+                    log.Error("Failed to load script file \"" + file + "\"", e);
+                }
+            }
+
             RegisterCommands();
         }
 
-        /// <summary>
+    /// <summary>
         /// Register user invocable commands
         /// </summary>
         private void RegisterCommands()
@@ -71,6 +109,13 @@ namespace Bot.Components
 
         private void OnBotCommandMessage(InvokeCommandMessage message)
         {
+            if (message.Command == "reload")
+            {
+                log.Debug("Reloading commands...");
+                LoadCommands();
+                return;
+            }
+
             string commandName = message.Command;
             if (!commands.ContainsKey(commandName))
             {

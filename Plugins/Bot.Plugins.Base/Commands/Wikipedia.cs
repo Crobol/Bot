@@ -72,6 +72,9 @@ namespace Bot.Plugins.Base.Commands
         {
             WikipediaOptions options = OptionParser.Parse<WikipediaOptions>(e.Data.Message);
 
+            if (string.IsNullOrEmpty(options.Query))
+                return null;
+
             ICollection<string> lines = GetResponse(options);
 
             if (!lines.Any())

@@ -26,7 +26,6 @@ namespace Bot.Components
             log.Info("Registering Python scripts...");
 
             string[] files = Directory.GetFiles("Scripts", "*.py");
-            var sb = new StringBuilder();
             foreach (string file in files)
             {
                 try

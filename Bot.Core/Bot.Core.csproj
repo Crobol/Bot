@@ -66,6 +66,7 @@
     <Compile Include="Commands\DefaultParam.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\PythonScriptCommand.cs" />
     <Compile Include="Component\Component.cs" />
     <Compile Include="Component\IComponent.cs" />
     <Compile Include="HttpHelper.cs" />
